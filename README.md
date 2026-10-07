@@ -25,7 +25,9 @@ frontend/
     api/tasks.js                # API client
     pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
     pages/AddTask.jsx           # Page 2: add task form
-    components/StatCard.jsx, TaskTable.jsx
+    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx
+    hooks/useTheme.js           # Theme state, applied to <html> and saved
+    theme.js                    # Theme helpers (initial choice, apply, persist)
 ```
 
 ## API
@@ -60,3 +62,15 @@ npm run dev
 ```
 
 Open http://localhost:5173. The Vite dev server proxies `/api` to the backend on port 8000.
+
+Frontend tests (from `frontend/`, Node ≥ 18):
+
+```bash
+npm install
+npm test
+```
+
+## Theme
+
+The **Dark mode** button in the top bar switches between light and dark themes. The choice is saved in
+`localStorage` (key `theme`); without a saved choice the app follows the OS `prefers-color-scheme` setting.
