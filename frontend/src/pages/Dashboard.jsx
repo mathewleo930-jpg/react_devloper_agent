@@ -53,7 +53,7 @@ export default function Dashboard() {
     <section>
       <div className="page-header">
         <h1>Dashboard</h1>
-        <Link to="/tasks/new" className="btn btn-primary">+ Add Task</Link>
+        <Link to="/tasks/new" className="btn btn-add">+ Add Task</Link>
       </div>
 
       {error && <div className="alert">{error}</div>}
