@@ -74,3 +74,7 @@ npm test
 
 The **Dark mode** button in the top bar switches between light and dark themes. The choice is saved in
 `localStorage` (key `theme`); without a saved choice the app follows the OS `prefers-color-scheme` setting.
+
+The Dashboard's **+ Add Task** button is green (`.btn-add`, tokens `--add-task-bg`, `--add-task-hover` and
+`--on-add-task` in `frontend/src/index.css`), with light and dark variants that both meet 4.5:1 text contrast.
+Its tests are `src/pages/Dashboard.test.jsx` and `src/addTaskButton.css.test.js` (run with `npm test` in `frontend/`).

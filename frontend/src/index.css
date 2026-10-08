@@ -10,6 +10,9 @@
   --danger: #dc2626;
   --pending: #d97706;
   --on-primary: #fff;
+  --add-task-bg: #15803d;
+  --add-task-hover: #166534;
+  --on-add-task: #ffffff;
   --hover-bg: #f0f1f5;
   --badge-pending-bg: #fef3c7;
   --badge-pending-fg: #92400e;
@@ -40,6 +43,9 @@
   --danger: #f87171;
   --pending: #fbbf24;
   --on-primary: #12141c;
+  --add-task-bg: #4ade80;
+  --add-task-hover: #86efac;
+  --on-add-task: #12141c;
   --hover-bg: #252938;
   --badge-pending-bg: #3a2a0a;
   --badge-pending-fg: #fcd34d;
@@ -133,6 +139,9 @@ h2 { font-size: 1.1rem; margin: 0 0 1rem; }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-add { background: var(--add-task-bg); border-color: var(--add-task-bg); color: var(--on-add-task); min-height: 44px; }
+.btn-add:hover:not(:disabled) { background: var(--add-task-hover); border-color: var(--add-task-hover); }
+.btn-add:focus-visible { outline: 2px solid var(--add-task-bg); outline-offset: 2px; }
 .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.85rem; }
 .btn-success { color: var(--success); border-color: var(--success-border); }
 .btn-success:hover:not(:disabled) { background: var(--success-hover-bg); }
