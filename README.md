@@ -21,8 +21,10 @@ frontend/
     theme.js                    # Theme helpers (initial choice, apply, persist)
   .env.example                  # Template for frontend/.env.local
 supabase/
+  config.toml                   # Supabase CLI config
   migrations/                   # SQL schema: tasks table, task_stats view, RLS policies
-.github/workflows/deploy-pages.yml  # Test, build and deploy frontend on push to main
+.github/workflows/deploy-pages.yml        # Test, build and deploy frontend on push to main
+.github/workflows/supabase-migrations.yml # Preview migrations on PRs, apply them on merge to main
 backend/                        # Legacy FastAPI + SQLite API; no longer used or deployed
 ```
 
@@ -45,6 +47,17 @@ add, complete and delete tasks**. Add Supabase Auth and per-user policies before
    - Settings → Pages → Source: **GitHub Actions**.
    - Settings → Secrets and variables → Actions → **Variables**: add `VITE_SUPABASE_URL` and
      `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+## Database changes
+
+Schema changes go through migration files, not the SQL Editor:
+
+1. Create a file: `npx supabase migration new <name>` (adds `supabase/migrations/<timestamp>_<name>.sql`) and write the SQL.
+2. Open a PR. The **Supabase migrations** workflow runs `supabase db push --dry-run` and lists what would be applied.
+3. Merge to `main`. The workflow runs `supabase db push`, applying only migrations not yet recorded in the database.
+
+The workflow needs the repo secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`.
+Avoid editing the schema by hand in the dashboard; it makes the database drift from the migration files.
 
 ## Running
 
