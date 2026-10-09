@@ -44,7 +44,7 @@ const themes = {
 };
 
 describe('add-button styles', () => {
-  it('defines green add-button tokens in light and dark themes', () => {
+  it('defines blue add-button tokens in light and dark themes', () => {
     for (const block of Object.values(themes)) {
       for (const name of ['--add-bg', '--add-hover-bg', '--on-add']) {
         expect(() => token(block, name)).not.toThrow();
@@ -52,13 +52,19 @@ describe('add-button styles', () => {
     }
   });
 
-  it('add-button colours are green', () => {
+  it('add-button colours are blue', () => {
     for (const block of Object.values(themes)) {
       for (const name of ['--add-bg', '--add-hover-bg']) {
         const [r, g, b] = toRgb(token(block, name));
-        expect(g).toBeGreaterThan(r);
-        expect(g).toBeGreaterThan(b);
+        expect(b).toBeGreaterThan(r);
+        expect(b).toBeGreaterThan(g);
       }
+    }
+  });
+
+  it('add-button blue is distinct from the primary indigo', () => {
+    for (const block of Object.values(themes)) {
+      expect(token(block, '--add-bg').toLowerCase()).not.toBe(token(block, '--primary').toLowerCase());
     }
   });
 

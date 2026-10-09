@@ -24,7 +24,7 @@ async function renderDashboard() {
 describe('Dashboard', () => {
   afterEach(cleanup);
 
-  it('Add Task link uses the green btn-add style', async () => {
+  it('Add Task link uses the blue btn-add style', async () => {
     await renderDashboard();
     const link = screen.getByRole('link', { name: '+ Add Task' });
     expect(link.classList.contains('btn-add')).toBe(true);
