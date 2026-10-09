@@ -56,7 +56,8 @@ Schema changes go through migration files, not the SQL Editor:
 2. Open a PR. The **Supabase migrations** workflow runs `supabase db push --dry-run` and lists what would be applied.
 3. Merge to `main`. The workflow runs `supabase db push`, applying only migrations not yet recorded in the database.
 
-The workflow needs the repo secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`.
+The workflow needs one repo secret, `SUPABASE_DB_URL`: the Session pooler connection string
+from Supabase → Connect (URL-encode special characters in the password).
 Avoid editing the schema by hand in the dashboard; it makes the database drift from the migration files.
 
 ## Running
