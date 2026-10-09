@@ -9,13 +9,16 @@ export default function ThemeToggle({ theme, onToggle }) {
   return (
     <button
       type="button"
-      className="btn theme-toggle"
-      aria-pressed={isDark}
+      role="switch"
+      aria-checked={isDark}
+      className="theme-switch"
       title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       onClick={onToggle}
     >
-      <span aria-hidden="true">{isDark ? '☾' : '☀'}</span>
-      Dark mode
+      <span className="theme-switch-label">Dark mode</span>
+      <span className="theme-switch-track" aria-hidden="true">
+        <span className="theme-switch-thumb">{isDark ? '☾' : '☀'}</span>
+      </span>
     </button>
   );
 }

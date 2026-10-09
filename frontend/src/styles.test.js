@@ -76,3 +76,23 @@ describe('add-button styles', () => {
     expect(body).toMatch(/color:\s*var\(--on-add\)/);
   });
 });
+
+describe('theme switch styles', () => {
+  it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
+    for (const block of Object.values(themes)) {
+      const surface = token(block, '--surface');
+      expect(contrast(token(block, '--muted'), surface)).toBeGreaterThanOrEqual(3);
+      expect(contrast(token(block, '--primary'), surface)).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('checked switch uses the primary track colour', () => {
+    const body = ruleBody(".theme-switch[aria-checked='true'] .theme-switch-track");
+    expect(body).toMatch(/background:\s*var\(--primary\)/);
+  });
+
+  it('switch has a visible focus outline and 44px touch target', () => {
+    expect(ruleBody('.theme-switch:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+    expect(ruleBody('.theme-switch')).toMatch(/min-height:\s*44px/);
+  });
+});
