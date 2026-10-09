@@ -3,72 +3,61 @@ Creating a test web app for testing the Developer Kit
 
 
 ## Task Manager
-A two-page task management app: **React (Vite)** frontend + **FastAPI** backend with SQLite.
+A two-page task management app: **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
+
+Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
 ## Project structure
 
 ```
-backend/
-  app/
-    main.py                     # FastAPI app, CORS, router registration
-    core/config.py              # Settings (env vars prefixed TASKS_)
-    db/database.py              # SQLAlchemy engine, session, init
-    models/task.py              # ORM model + TaskStatus enum
-    schemas/task.py             # Pydantic request/response schemas
-    repositories/task_repository.py  # Data access (DB queries only)
-    services/task_service.py    # Business logic
-    api/deps.py                 # Dependency wiring (session -> repo -> service)
-    api/routes/tasks.py         # HTTP layer (routes, status codes)
-  tests/test_tasks.py
 frontend/
   src/
-    api/tasks.js                # API client
+    lib/supabase.js             # Supabase client (reads VITE_SUPABASE_* env vars)
+    api/tasks.js                # Task queries against Supabase
     pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
     pages/AddTask.jsx           # Page 2: add task form
     components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx
     hooks/useTheme.js           # Theme state, applied to <html> and saved
     theme.js                    # Theme helpers (initial choice, apply, persist)
+  .env.example                  # Template for frontend/.env.local
+supabase/
+  migrations/                   # SQL schema: tasks table, task_stats view, RLS policies
+.github/workflows/deploy-pages.yml  # Test, build and deploy frontend on push to main
+backend/                        # Legacy FastAPI + SQLite API; no longer used or deployed
 ```
 
-## API
+## Data model
 
-| Method | Path                         | Description                  |
-|--------|------------------------------|------------------------------|
-| GET    | `/api/tasks?limit=N`         | List tasks (newest first)    |
-| GET    | `/api/tasks/stats`           | Total / pending / completed  |
-| POST   | `/api/tasks`                 | Create task `{title, description?}` |
-| PATCH  | `/api/tasks/{id}/complete`   | Mark task completed          |
-| DELETE | `/api/tasks/{id}`            | Delete task                  |
+| Object       | Description                                                       |
+|--------------|-------------------------------------------------------------------|
+| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `created_at` |
+| `task_stats` | View with `total`, `pending`, `completed` counts                  |
 
-Interactive docs: http://127.0.0.1:8000/docs
+Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can
+add, complete and delete tasks**. Add Supabase Auth and per-user policies before using it for real data.
+
+## Setup
+
+1. **Database:** in Supabase → SQL Editor, run `supabase/migrations/20261009000000_create_tasks.sql` once.
+2. **Local env:** copy `frontend/.env.example` to `frontend/.env.local` and fill in the Project URL and
+   publishable key (Supabase → Project Settings → Data API / API Keys). `.env*` files are gitignored.
+3. **GitHub (one time):**
+   - Settings → Pages → Source: **GitHub Actions**.
+   - Settings → Secrets and variables → Actions → **Variables**: add `VITE_SUPABASE_URL` and
+     `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
 ## Running
 
-Backend (from `backend/`):
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate        # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-pytest                        # run tests
-```
-
-Frontend (from `frontend/`):
+From `frontend/` (Node ≥ 18):
 
 ```bash
 npm install
-npm run dev
-```
-
-Open http://localhost:5173. The Vite dev server proxies `/api` to the backend on port 8000.
-
-Frontend tests (from `frontend/`, Node ≥ 18):
-
-```bash
-npm install
+npm run dev      # http://localhost:5173
 npm test
+npm run build    # output in frontend/dist, built for the /react_devloper_agent/ path
 ```
+
+Every push to `main` runs the tests, builds and deploys to GitHub Pages.
 
 ## Theme
 
