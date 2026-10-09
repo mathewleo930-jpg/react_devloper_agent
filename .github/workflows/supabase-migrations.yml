@@ -1,0 +1,35 @@
+name: Supabase migrations
+
+on:
+  pull_request:
+    paths: ['supabase/**']
+  push:
+    branches: [main]
+    paths: ['supabase/**']
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: zltgrvhonhjznzkrogdp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      # PRs only preview which migrations would run; merging to main applies them.
+      - name: Preview migrations
+        if: github.event_name == 'pull_request'
+        run: supabase db push --dry-run
+      - name: Apply migrations
+        if: github.event_name != 'pull_request'
+        run: supabase db push
