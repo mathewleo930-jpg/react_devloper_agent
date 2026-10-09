@@ -4,4 +4,8 @@ __pycache__/
 .pytest_cache/
 node_modules/
 dist/
+
+# Environment files (real values live here or in GitHub repo variables)
 .env
+.env.*
+!.env.example
