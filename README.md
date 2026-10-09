@@ -7,6 +7,9 @@ A two-page task management app: **React (Vite)** frontend on **GitHub Pages**, w
 
 Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
+- [How it works](docs/HOW-IT-WORKS.md): frontend, Supabase backend and the request flow
+- [Deployment](docs/DEPLOYMENT.md): both GitHub Actions workflows and how to ship changes
+
 ## Project structure
 
 ```
@@ -25,7 +28,9 @@ supabase/
   migrations/                   # SQL schema: tasks table, task_stats view, RLS policies
 .github/workflows/deploy-pages.yml        # Test, build and deploy frontend on push to main
 .github/workflows/supabase-migrations.yml # Preview migrations on PRs, apply them on merge to main
-backend/                        # Legacy FastAPI + SQLite API; no longer used or deployed
+docs/
+  HOW-IT-WORKS.md               # How frontend and backend work together
+  DEPLOYMENT.md                 # Logic and flow of both deployments
 ```
 
 ## Data model
@@ -40,13 +45,14 @@ add, complete and delete tasks**. Add Supabase Auth and per-user policies before
 
 ## Setup
 
-1. **Database:** in Supabase → SQL Editor, run `supabase/migrations/20261009000000_create_tasks.sql` once.
+1. **Database:** applied automatically by the **Supabase migrations** workflow (see [Deployment](docs/DEPLOYMENT.md)).
 2. **Local env:** copy `frontend/.env.example` to `frontend/.env.local` and fill in the Project URL and
    publishable key (Supabase → Project Settings → Data API / API Keys). `.env*` files are gitignored.
 3. **GitHub (one time):**
    - Settings → Pages → Source: **GitHub Actions**.
    - Settings → Secrets and variables → Actions → **Variables**: add `VITE_SUPABASE_URL` and
      `VITE_SUPABASE_PUBLISHABLE_KEY`.
+   - Settings → Secrets and variables → Actions → **Secrets**: add `SUPABASE_DB_URL`.
 
 ## Database changes
 

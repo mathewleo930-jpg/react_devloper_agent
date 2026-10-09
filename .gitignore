@@ -1,11 +1,7 @@
-.venv/
-__pycache__/
-*.db
-.pytest_cache/
 node_modules/
 dist/
 
-# Environment files (real values live here or in GitHub repo variables)
+# Environment files (real values live here or in GitHub repo variables/secrets)
 .env
 .env.*
 !.env.example
