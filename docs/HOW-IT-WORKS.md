@@ -46,7 +46,9 @@ frontend/
     api/tasks.js              # every database call the app makes
     pages/Dashboard.jsx       # page 1: stats + recent tasks + complete/delete
     pages/AddTask.jsx         # page 2: add-task form
-    components/               # StatCard, TaskTable, ThemeToggle
+    pages/Analytics.jsx       # page 3: completed / pending / deleted bar chart
+    components/               # StatCard, TaskTable, ThemeToggle, BreakdownChart
+    breakdown.js              # task_stats row → chart bars with percentages
     hooks/useTheme.js, theme.js   # light/dark theme
 ```
 
@@ -55,6 +57,7 @@ frontend/
 | URL | Page | What it does |
 |---|---|---|
 | `#/` | Dashboard | Shows total / pending / completed counts and the 20 newest tasks; complete or delete a task |
+| `#/analytics` | Analytics | Bar chart, summary sentence and counts for completed, pending and deleted tasks |
 | `#/tasks/new` | Add Task | Form with title (required, ≤ 200) and description (optional, ≤ 2000) |
 | anything else | redirects to `#/` | |
 
@@ -90,10 +93,16 @@ tasks
   description  text, optional, ≤ 2000 chars
   status       enum task_status: 'pending' | 'completed'   (default 'pending')
   created_at   timestamptz, default now()
+  deleted_at   timestamptz, null until the task is deleted
 
 task_stats (view over tasks)
-  total, pending, completed   integer counts
+  total, pending, completed   integer counts of tasks that are not deleted
+  deleted                     integer count of deleted tasks
 ```
+
+Deleting is a **soft delete**: it sets `deleted_at` and keeps the row, so the Analytics tab can count
+deleted tasks. Every query for tasks filters on `deleted_at is null`, so deleted tasks never show on the
+Dashboard and cannot be completed.
 
 Validation lives in the database as `check` constraints, so bad data is rejected even if it bypasses the
 form.
@@ -139,20 +148,21 @@ sequenceDiagram
 
 | User action | `tasksApi` function | HTTP request | SQL Supabase runs |
 |---|---|---|---|
-| Open Dashboard | `list(20)` | `GET /tasks?order=created_at.desc,id.desc&limit=20` | `select * from tasks order by created_at desc, id desc limit 20` |
-| Open Dashboard | `stats()` | `GET /task_stats` | `select total, pending, completed from task_stats` |
+| Open Dashboard | `list(20)` | `GET /tasks?deleted_at=is.null&order=created_at.desc,id.desc&limit=20` | `select * from tasks where deleted_at is null order by created_at desc, id desc limit 20` |
+| Open Dashboard or Analytics | `stats()` | `GET /task_stats` | `select total, pending, completed, deleted from task_stats` |
 | Submit Add Task form | `create(...)` | `POST /tasks` | `insert into tasks (title, description) … returning *` |
-| Click Complete | `complete(id)` | `PATCH /tasks?id=eq.<id>` | `update tasks set status='completed' where id=<id> returning *` |
-| Click Delete | `remove(id)` | `DELETE /tasks?id=eq.<id>` | `delete from tasks where id=<id> returning id` |
+| Click Complete | `complete(id)` | `PATCH /tasks?id=eq.<id>&deleted_at=is.null` | `update tasks set status='completed' where id=<id> and deleted_at is null returning *` |
+| Click Delete | `remove(id)` | `PATCH /tasks?id=eq.<id>&deleted_at=is.null` | `update tasks set deleted_at=<now> where id=<id> and deleted_at is null returning id` |
 
 After any Complete or Delete, the Dashboard re-runs `list` and `stats` so the counts and table stay in
-sync.
+sync. The Analytics page loads `stats` each time it opens and shows a friendly message with a **Retry**
+button if the request fails.
 
 ### Error handling
 
 - supabase-js does not throw; it returns `{ data, error }`. `api/tasks.js` turns `error` into a thrown
   `Error`, so the pages can use plain `try/catch`.
-- If `complete` or `delete` matches no row, the result is `"Task <id> not found"`.
+- If `complete` or `delete` matches no row (missing or already deleted), the result is `"Task <id> not found"`.
 - Database constraint errors (for example, a title over 200 characters) come back as the Postgres error
   message and show in the page's red alert box.
 

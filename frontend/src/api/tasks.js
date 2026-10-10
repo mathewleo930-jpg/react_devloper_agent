@@ -21,11 +21,12 @@ export const tasksApi = {
       supabase
         .from('tasks')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(Math.min(limit ?? MAX_LIMIT, MAX_LIMIT)),
     ),
-  stats: () => unwrap(supabase.from('task_stats').select('total, pending, completed').single()),
+  stats: () => unwrap(supabase.from('task_stats').select('total, pending, completed, deleted').single()),
   create: ({ title, description }) =>
     unwrap(
       supabase
@@ -35,9 +36,22 @@ export const tasksApi = {
         .single(),
     ),
   complete: (id) =>
-    requireRow(supabase.from('tasks').update({ status: 'completed' }).eq('id', id).select().maybeSingle(), id),
+    requireRow(
+      supabase.from('tasks').update({ status: 'completed' }).eq('id', id).is('deleted_at', null).select().maybeSingle(),
+      id,
+    ),
+  // Soft delete: the row stays so the Analytics tab can count deleted tasks.
   remove: async (id) => {
-    await requireRow(supabase.from('tasks').delete().eq('id', id).select('id').maybeSingle(), id);
+    await requireRow(
+      supabase
+        .from('tasks')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .is('deleted_at', null)
+        .select('id')
+        .maybeSingle(),
+      id,
+    );
     return null;
   },
 };
