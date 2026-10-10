@@ -40,6 +40,11 @@ export const tasksApi = {
       supabase.from('tasks').update({ status: 'completed' }).eq('id', id).is('deleted_at', null).select().maybeSingle(),
       id,
     ),
+  reopen: (id) =>
+    requireRow(
+      supabase.from('tasks').update({ status: 'pending' }).eq('id', id).is('deleted_at', null).select().maybeSingle(),
+      id,
+    ),
   // Soft delete: the row stays so the Analytics tab can count deleted tasks.
   remove: async (id) => {
     await requireRow(
