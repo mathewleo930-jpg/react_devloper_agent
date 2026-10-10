@@ -77,6 +77,25 @@ describe('add-button styles', () => {
   });
 });
 
+describe('analytics styles', () => {
+  it('chart bar colours contrast at least 3:1 with the surface in both themes', () => {
+    for (const block of Object.values(themes)) {
+      const surface = token(block, '--surface');
+      for (const name of ['--success', '--pending', '--deleted']) {
+        expect(contrast(token(block, name), surface)).toBeGreaterThanOrEqual(3);
+      }
+    }
+    expect(ruleBody('.chart-bar-completed')).toMatch(/background:\s*var\(--success\)/);
+    expect(ruleBody('.chart-bar-pending')).toMatch(/background:\s*var\(--pending\)/);
+    expect(ruleBody('.chart-bar-deleted')).toMatch(/background:\s*var\(--deleted\)/);
+  });
+
+  it('nav links have a 44px touch target and visible focus outline', () => {
+    expect(ruleBody('.nav-link')).toMatch(/min-height:\s*44px/);
+    expect(ruleBody('.nav-link:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {

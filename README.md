@@ -3,7 +3,7 @@ Creating a test web app for testing the Developer Kit
 
 
 ## Task Manager
-A two-page task management app: **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
+A task management app (Dashboard, Add Task and Analytics pages): **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
 
 Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
@@ -19,9 +19,11 @@ frontend/
     api/tasks.js                # Task queries against Supabase
     pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
     pages/AddTask.jsx           # Page 2: add task form
-    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx
+    pages/Analytics.jsx         # Page 3: bar chart of completed / pending / deleted tasks
+    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx
     hooks/useTheme.js           # Theme state, applied to <html> and saved
     theme.js                    # Theme helpers (initial choice, apply, persist)
+    breakdown.js                # Turns task_stats counts into chart bars with percentages
   .env.example                  # Template for frontend/.env.local
 supabase/
   config.toml                   # Supabase CLI config
@@ -37,8 +39,8 @@ docs/
 
 | Object       | Description                                                       |
 |--------------|-------------------------------------------------------------------|
-| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `created_at` |
-| `task_stats` | View with `total`, `pending`, `completed` counts                  |
+| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `created_at`, `deleted_at` (set when deleted) |
+| `task_stats` | View with `total`, `pending`, `completed` counts of tasks that are not deleted, plus `deleted` |
 
 Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can
 add, complete and delete tasks**. Add Supabase Auth and per-user policies before using it for real data.
@@ -72,12 +74,22 @@ From `frontend/` (Node ≥ 18):
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm test
+npm run dev      # http://localhost:5173 (Analytics tab: http://localhost:5173/#/analytics)
+npm test         # Vitest unit tests
 npm run build    # output in frontend/dist, built for the /react_devloper_agent/ path
 ```
 
 Every push to `main` runs the tests, builds and deploys to GitHub Pages.
+
+## Analytics
+
+The **Analytics** tab in the top bar (`#/analytics`) shows a bar chart of how many tasks are completed,
+pending and deleted, with each share as a percentage and a one-sentence summary.
+
+To count deleted tasks, deleting is now a **soft delete**: the Dashboard's Delete button sets the task's
+`deleted_at` instead of removing the row (migration `20261010000000_soft_delete_tasks.sql`). Deleted tasks
+are hidden from the Dashboard and its counts. Tasks deleted before this migration were removed for good, so
+they are not counted.
 
 ## Theme
 
