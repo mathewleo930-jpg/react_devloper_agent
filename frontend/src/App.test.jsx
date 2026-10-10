@@ -43,4 +43,14 @@ describe('App navigation', () => {
     expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBeNull();
     await screen.findByText(/No tasks to chart yet/);
   });
+
+  it('notification bell is the last control in the header', async () => {
+    renderAt('/');
+    const header = screen.getByRole('banner');
+    const bell = within(header).getByRole('button', { name: 'Notifications' });
+    const toggle = within(header).getByRole('switch', { name: 'Dark mode' });
+    expect(header.lastElementChild).toBe(bell);
+    expect(toggle.compareDocumentPosition(bell) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await screen.findByRole('heading', { name: 'Dashboard' });
+  });
 });

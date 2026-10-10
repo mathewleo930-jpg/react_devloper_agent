@@ -122,3 +122,23 @@ describe('theme switch styles', () => {
     expect(ruleBody('.theme-switch')).toMatch(/min-height:\s*44px/);
   });
 });
+
+describe('notification bell styles', () => {
+  it('is a 44px circle', () => {
+    const body = ruleBody('.icon-button');
+    expect(body).toMatch(/border-radius:\s*50%/);
+    expect(body).toMatch(/(?:^|[\s;])width:\s*44px/);
+    expect(body).toMatch(/(?:^|[\s;])height:\s*44px/);
+  });
+
+  it('has a visible focus outline', () => {
+    expect(ruleBody('.icon-button:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+  });
+
+  it('icon colour contrasts at least 4.5:1 with the surface in both themes', () => {
+    expect(ruleBody('.icon-button')).toMatch(/color:\s*var\(--text\)/);
+    for (const block of Object.values(themes)) {
+      expect(contrast(token(block, '--text'), token(block, '--surface'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});

@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import AddTask from './pages/AddTask.jsx';
 import Analytics from './pages/Analytics.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
+import NotificationBell from './components/NotificationBell.jsx';
 import useTheme from './hooks/useTheme.js';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           <NavLink to="/analytics" className="nav-link">Analytics</NavLink>
         </nav>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        <NotificationBell />
       </header>
       <main className="container">
         <Routes>
