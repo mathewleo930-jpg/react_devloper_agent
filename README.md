@@ -109,5 +109,5 @@ they are not counted.
 The **Dark mode** button in the top bar switches between light and dark themes. The choice is saved in
 `localStorage` (key `theme`); without a saved choice the app follows the OS `prefers-color-scheme` setting.
 
-The Dashboard's **+ Add Task** button uses the green `btn-add` style (`--add-bg`, `--add-hover-bg` and
+The Dashboard's **+ Add Task** button uses the blue `btn-add` style (`--add-bg`, `--add-hover-bg` and
 `--on-add` in `frontend/src/index.css`), with colours for both themes that keep text contrast at 4.5:1 or higher.
