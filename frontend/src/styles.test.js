@@ -96,6 +96,13 @@ describe('analytics styles', () => {
   });
 });
 
+describe('dashboard search styles', () => {
+  it('search input has a 44px touch target and visible focus outline', () => {
+    expect(ruleBody('.search-input')).toMatch(/min-height:\s*44px/);
+    expect(ruleBody('.search-input:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {
