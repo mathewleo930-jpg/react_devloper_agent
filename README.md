@@ -88,6 +88,12 @@ by title. Matching ignores case and surrounding spaces, and descriptions are not
 the card shows "No tasks match your search." The stats cards always show the full counts. When there are no
 tasks at all, the search box is hidden and the usual "No tasks yet" message is shown.
 
+## Reopening tasks
+
+In the Dashboard's **Recent tasks** table, completed tasks have a **Reopen** button where pending tasks have
+**Complete**. Reopen calls `tasksApi.reopen(id)`, which sets the task's status back to `pending`. The table and
+stat cards then reload. Reopening a missing or deleted task shows "Task <id> not found" in the error banner.
+
 ## Analytics
 
 The **Analytics** tab in the top bar (`#/analytics`) shows a bar chart of how many tasks are completed,

@@ -51,6 +51,8 @@ export default function Dashboard() {
 
   const handleComplete = (id) => runAction(id, () => tasksApi.complete(id));
 
+  const handleReopen = (id) => runAction(id, () => tasksApi.reopen(id));
+
   const handleDelete = (task) => {
     if (!window.confirm(`Delete task "${task.title}"?`)) return;
     runAction(task.id, () => tasksApi.remove(task.id));
@@ -78,7 +80,7 @@ export default function Dashboard() {
         {loading ? (
           <p className="empty">Loading…</p>
         ) : tasks.length === 0 ? (
-          <TaskTable tasks={tasks} busyId={busyId} onComplete={handleComplete} onDelete={handleDelete} />
+          <TaskTable tasks={tasks} busyId={busyId} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
         ) : (
           <>
             <div className="search-field">
@@ -98,7 +100,7 @@ export default function Dashboard() {
               {visibleTasks.length === 0 ? (
                 <p className="empty">No tasks match your search.</p>
               ) : (
-                <TaskTable tasks={visibleTasks} busyId={busyId} onComplete={handleComplete} onDelete={handleDelete} />
+                <TaskTable tasks={visibleTasks} busyId={busyId} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
               )}
             </div>
           </>

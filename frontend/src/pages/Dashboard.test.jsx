@@ -9,6 +9,7 @@ vi.mock('../api/tasks.js', () => ({
     list: vi.fn(() => Promise.resolve([])),
     stats: vi.fn(() => Promise.resolve({ total: 0, pending: 0, completed: 0 })),
     complete: vi.fn(),
+    reopen: vi.fn(),
     remove: vi.fn(),
   },
 }));
@@ -67,6 +68,15 @@ describe('Dashboard', () => {
     await renderDashboard();
     const link = screen.getByRole('link', { name: '+ Add Task' });
     expect(link.getAttribute('href')).toBe('/tasks/new');
+  });
+
+  it('clicking Reopen on a completed task calls tasksApi.reopen and reloads the list', async () => {
+    tasksApi.reopen.mockResolvedValueOnce({ ...sampleTasks[2], status: 'pending' });
+    await renderWithTasks();
+    const listCalls = tasksApi.list.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
+    expect(tasksApi.reopen).toHaveBeenCalledWith(3);
+    await waitFor(() => expect(tasksApi.list.mock.calls.length).toBe(listCalls + 1));
   });
 });
 

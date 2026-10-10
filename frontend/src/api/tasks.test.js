@@ -82,6 +82,30 @@ describe('tasksApi', () => {
     await expect(tasksApi.complete(99)).rejects.toThrow('Task 99 not found');
   });
 
+  it('reopen sets status back to pending for the given id', async () => {
+    const row = { id: 5, status: 'pending' };
+    result = { data: row, error: null };
+    expect(await tasksApi.reopen(5)).toEqual(row);
+    expect(calls).toContainEqual(['from', 'tasks']);
+    expect(calls).toContainEqual(['update', { status: 'pending' }]);
+    expect(calls).toContainEqual(['eq', 'id', 5]);
+  });
+
+  it('reopen ignores soft-deleted tasks', async () => {
+    result = { data: { id: 5, status: 'pending' }, error: null };
+    await tasksApi.reopen(5);
+    expect(calls).toContainEqual(['is', 'deleted_at', null]);
+  });
+
+  it('reopen throws "not found" when no row matches', async () => {
+    await expect(tasksApi.reopen(99)).rejects.toThrow('Task 99 not found');
+  });
+
+  it('reopen surfaces Supabase errors as thrown Errors', async () => {
+    result = { data: null, error: { message: 'permission denied' } };
+    await expect(tasksApi.reopen(5)).rejects.toThrow('permission denied');
+  });
+
   it('surfaces Supabase errors as thrown Errors', async () => {
     result = { data: null, error: { message: 'permission denied' } };
     await expect(tasksApi.stats()).rejects.toThrow('permission denied');
