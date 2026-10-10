@@ -64,11 +64,11 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); }
-body, .topbar, .card, .stat-card, .btn, .form input, .form textarea {
+body, .topbar, .card, .stat-card, .btn, .form input, .form textarea, .search-input {
   transition: background-color 0.2s, color 0.2s;
 }
 @media (prefers-reduced-motion: reduce) {
-  body, .topbar, .card, .stat-card, .btn, .form input, .form textarea { transition: none; }
+  body, .topbar, .card, .stat-card, .btn, .form input, .form textarea, .search-input { transition: none; }
 }
 h1 { font-size: 1.6rem; margin: 0; }
 h2 { font-size: 1.1rem; margin: 0 0 1rem; }
@@ -162,6 +162,15 @@ h2 { font-size: 1.1rem; margin: 0 0 1rem; }
 .muted { color: var(--muted); }
 .nowrap { white-space: nowrap; }
 .empty { color: var(--muted); text-align: center; padding: 1.5rem 0; margin: 0; }
+
+.search-field { margin-bottom: 1rem; }
+.search-input {
+  width: 100%; max-width: 360px; min-height: 44px;
+  font: inherit; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
 
 .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; text-transform: capitalize; }
 .badge-pending { background: var(--badge-pending-bg); color: var(--badge-pending-fg); }

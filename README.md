@@ -81,6 +81,13 @@ npm run build    # output in frontend/dist, built for the /react_devloper_agent/
 
 Every push to `main` runs the tests, builds and deploys to GitHub Pages.
 
+## Task search
+
+The Dashboard's **Recent tasks** card has a search box above the table. As you type, it filters the loaded tasks
+by title. Matching ignores case and surrounding spaces, and descriptions are not searched. If nothing matches,
+the card shows "No tasks match your search." The stats cards always show the full counts. When there are no
+tasks at all, the search box is hidden and the usual "No tasks yet" message is shown.
+
 ## Analytics
 
 The **Analytics** tab in the top bar (`#/analytics`) shows a bar chart of how many tasks are completed,
