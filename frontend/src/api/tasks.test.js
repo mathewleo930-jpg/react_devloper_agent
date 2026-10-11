@@ -75,7 +75,26 @@ describe('tasksApi', () => {
   it('create trims input and stores blank description as null', async () => {
     result = { data: { id: 2 }, error: null };
     await tasksApi.create({ title: '  Write docs ', description: '   ' });
-    expect(calls).toContainEqual(['insert', { title: 'Write docs', description: null }]);
+    expect(calls).toContainEqual(['insert', { title: 'Write docs', description: null, priority: 'medium' }]);
+  });
+
+  it('create stores the given priority', async () => {
+    result = { data: { id: 3 }, error: null };
+    await tasksApi.create({ title: 'Ship it', description: '', priority: 'high' });
+    const insert = calls.find(([name]) => name === 'insert');
+    expect(insert[1].priority).toBe('high');
+  });
+
+  it('create defaults priority to medium when omitted', async () => {
+    result = { data: { id: 4 }, error: null };
+    await tasksApi.create({ title: 'Ship it' });
+    const insert = calls.find(([name]) => name === 'insert');
+    expect(insert[1].priority).toBe('medium');
+  });
+
+  it('create rejects an unknown priority without calling Supabase', async () => {
+    await expect(tasksApi.create({ title: 'Ship it', priority: 'urgent' })).rejects.toThrow('Invalid priority "urgent"');
+    expect(calls.map(([name]) => name)).not.toContain('insert');
   });
 
   it('complete throws "not found" when no row matches', async () => {

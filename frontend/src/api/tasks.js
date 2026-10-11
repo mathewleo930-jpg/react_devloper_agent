@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+import { DEFAULT_PRIORITY, PRIORITIES } from '../priority.js';
 
 const MAX_LIMIT = 500;
 
@@ -27,14 +28,18 @@ export const tasksApi = {
         .limit(Math.min(limit ?? MAX_LIMIT, MAX_LIMIT)),
     ),
   stats: () => unwrap(supabase.from('task_stats').select('total, pending, completed, deleted').single()),
-  create: ({ title, description }) =>
-    unwrap(
+  create: async ({ title, description, priority = DEFAULT_PRIORITY }) => {
+    if (!PRIORITIES.includes(priority)) {
+      throw new Error(`Invalid priority "${priority}"; expected one of ${PRIORITIES.join(', ')}`);
+    }
+    return unwrap(
       supabase
         .from('tasks')
-        .insert({ title: title.trim(), description: description?.trim() || null })
+        .insert({ title: title.trim(), description: description?.trim() || null, priority })
         .select()
         .single(),
-    ),
+    );
+  },
   complete: (id) =>
     requireRow(
       supabase.from('tasks').update({ status: 'completed' }).eq('id', id).is('deleted_at', null).select().maybeSingle(),

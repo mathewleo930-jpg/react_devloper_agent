@@ -103,6 +103,15 @@ describe('dashboard search styles', () => {
   });
 });
 
+describe('add task form styles', () => {
+  it('priority select has a 44px touch target and visible focus outline', () => {
+    expect(ruleBody('.form select')).toMatch(/min-height:\s*44px/);
+    expect(ruleBody('.form input:focus, .form textarea:focus, .form select:focus')).toMatch(
+      /outline:\s*2px solid var\(--primary\)/,
+    );
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {

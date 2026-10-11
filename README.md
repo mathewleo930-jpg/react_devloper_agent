@@ -39,7 +39,7 @@ docs/
 
 | Object       | Description                                                       |
 |--------------|-------------------------------------------------------------------|
-| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `created_at`, `deleted_at` (set when deleted) |
+| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `priority` (`low`/`medium`/`high`, default `medium`), `created_at`, `deleted_at` (set when deleted) |
 | `task_stats` | View with `total`, `pending`, `completed` counts of tasks that are not deleted, plus `deleted` |
 
 Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can
@@ -103,6 +103,12 @@ To count deleted tasks, deleting is now a **soft delete**: the Dashboard's Delet
 `deleted_at` instead of removing the row (migration `20261010000000_soft_delete_tasks.sql`). Deleted tasks
 are hidden from the Dashboard and its counts. Tasks deleted before this migration were removed for good, so
 they are not counted.
+
+## Task priority
+
+The **Add Task** form has a **Priority** dropdown (Low, Medium, High) that starts at Medium. The value is stored in
+the `priority` column added by migration `20261011000000_task_priority.sql`; existing tasks become `medium`.
+`tasksApi.create` rejects any other value with an `Invalid priority` error before calling Supabase.
 
 ## Theme
 
