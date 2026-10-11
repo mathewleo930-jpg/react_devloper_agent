@@ -165,7 +165,7 @@ git push -u origin feature/add-due-date    # open a PR
 - **Don't change the schema by hand** in the SQL Editor or Table Editor; the database would drift from
   the files. Read-only `select` queries are fine.
 - New columns should be **nullable or have a default**, for example
-  `add column priority int not null default 0`.
+  `add column estimate_minutes int not null default 0`.
 - Be careful with `drop` and renames: they delete data or break the live site. Read the dry run first.
 - If one PR changes both the schema and the frontend, both workflows run in parallel on merge. The site
   may show errors for a few seconds until the migration finishes. Adding the column in an earlier PR
