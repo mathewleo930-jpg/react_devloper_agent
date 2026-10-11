@@ -11,7 +11,10 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <Link to="/" className="brand">Task Manager</Link>
+        <Link to="/" className="brand">
+          <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width="28" height="28" />
+          Task Manager
+        </Link>
         <nav aria-label="Main" className="nav">
           <NavLink to="/" end className="nav-link">Dashboard</NavLink>
           <NavLink to="/analytics" className="nav-link">Analytics</NavLink>
