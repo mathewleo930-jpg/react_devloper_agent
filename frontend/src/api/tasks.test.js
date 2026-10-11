@@ -20,7 +20,7 @@ vi.mock('../lib/supabase.js', () => ({
   supabase: { from: (table) => (calls.push(['from', table]), builder) },
 }));
 
-const { tasksApi } = await import('./tasks.js');
+const { tasksApi, TaskNotFoundError } = await import('./tasks.js');
 
 describe('tasksApi', () => {
   beforeEach(() => {
@@ -128,5 +128,82 @@ describe('tasksApi', () => {
   it('surfaces Supabase errors as thrown Errors', async () => {
     result = { data: null, error: { message: 'permission denied' } };
     await expect(tasksApi.stats()).rejects.toThrow('permission denied');
+  });
+
+  it('get returns the non-deleted task with the given id', async () => {
+    const row = { id: 5, title: 'Plan release', description: null, status: 'pending', priority: 'high' };
+    result = { data: row, error: null };
+    expect(await tasksApi.get(5)).toEqual(row);
+    expect(calls).toContainEqual(['from', 'tasks']);
+    expect(calls).toContainEqual(['eq', 'id', 5]);
+    expect(calls).toContainEqual(['is', 'deleted_at', null]);
+  });
+
+  it('get throws TaskNotFoundError when the task is missing or deleted', async () => {
+    const promise = tasksApi.get(42);
+    await expect(promise).rejects.toBeInstanceOf(TaskNotFoundError);
+    await expect(promise).rejects.toThrow('Task 42 not found');
+  });
+
+  it('get rejects an invalid id without calling Supabase', async () => {
+    for (const id of [0, -1, 1.5, '5', NaN, undefined]) {
+      await expect(tasksApi.get(id)).rejects.toThrow(`Invalid task id "${id}"`);
+    }
+    expect(calls).toEqual([]);
+  });
+});
+
+describe('tasksApi.update', () => {
+  const edits = { title: '  Plan release ', description: '   ', priority: 'low' };
+
+  beforeEach(() => {
+    calls.length = 0;
+    result = { data: { id: 5 }, error: null };
+  });
+
+  it('update saves trimmed title, null blank description and priority', async () => {
+    expect(await tasksApi.update(5, edits)).toEqual({ id: 5 });
+    expect(calls).toContainEqual(['update', { title: 'Plan release', description: null, priority: 'low' }]);
+  });
+
+  it('update keeps a non-blank description, trimmed', async () => {
+    await tasksApi.update(5, { ...edits, description: ' Include notes ' });
+    const update = calls.find(([name]) => name === 'update');
+    expect(update[1].description).toBe('Include notes');
+  });
+
+  it('update only targets non-deleted tasks', async () => {
+    await tasksApi.update(5, edits);
+    expect(calls).toContainEqual(['eq', 'id', 5]);
+    expect(calls).toContainEqual(['is', 'deleted_at', null]);
+  });
+
+  it('update throws TaskNotFoundError when the task was deleted', async () => {
+    result = { data: null, error: null };
+    const promise = tasksApi.update(5, edits);
+    await expect(promise).rejects.toBeInstanceOf(TaskNotFoundError);
+    await expect(promise).rejects.toThrow('Task 5 not found');
+  });
+
+  it('update rejects a blank title without calling Supabase', async () => {
+    await expect(tasksApi.update(5, { ...edits, title: '   ' })).rejects.toThrow('Title is required');
+    expect(calls).toEqual([]);
+  });
+
+  it('update rejects an unknown priority without calling Supabase', async () => {
+    await expect(tasksApi.update(5, { ...edits, priority: 'urgent' })).rejects.toThrow('Invalid priority "urgent"');
+    expect(calls).toEqual([]);
+  });
+
+  it('update rejects an invalid id without calling Supabase', async () => {
+    await expect(tasksApi.update(0, edits)).rejects.toThrow('Invalid task id "0"');
+    expect(calls).toEqual([]);
+  });
+
+  it('update surfaces Supabase errors as thrown Errors', async () => {
+    result = { data: null, error: { message: 'permission denied' } };
+    const promise = tasksApi.update(5, edits);
+    await expect(promise).rejects.toThrow('permission denied');
+    await expect(promise).rejects.not.toBeInstanceOf(TaskNotFoundError);
   });
 });

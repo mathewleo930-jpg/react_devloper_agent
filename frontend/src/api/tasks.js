@@ -10,10 +10,23 @@ async function unwrap(query) {
   return data;
 }
 
+// Thrown when a task is missing or soft-deleted, so callers can tell it apart from other failures.
+export class TaskNotFoundError extends Error {}
+
 async function requireRow(query, id) {
   const row = await unwrap(query);
-  if (!row) throw new Error(`Task ${id} not found`);
+  if (!row) throw new TaskNotFoundError(`Task ${id} not found`);
   return row;
+}
+
+function requireValidId(id) {
+  if (!Number.isInteger(id) || id <= 0) throw new Error(`Invalid task id "${id}"`);
+}
+
+function requireValidPriority(priority) {
+  if (!PRIORITIES.includes(priority)) {
+    throw new Error(`Invalid priority "${priority}"; expected one of ${PRIORITIES.join(', ')}`);
+  }
 }
 
 export const tasksApi = {
@@ -28,16 +41,34 @@ export const tasksApi = {
         .limit(Math.min(limit ?? MAX_LIMIT, MAX_LIMIT)),
     ),
   stats: () => unwrap(supabase.from('task_stats').select('total, pending, completed, deleted').single()),
+  get: async (id) => {
+    requireValidId(id);
+    return requireRow(supabase.from('tasks').select('*').eq('id', id).is('deleted_at', null).maybeSingle(), id);
+  },
   create: async ({ title, description, priority = DEFAULT_PRIORITY }) => {
-    if (!PRIORITIES.includes(priority)) {
-      throw new Error(`Invalid priority "${priority}"; expected one of ${PRIORITIES.join(', ')}`);
-    }
+    requireValidPriority(priority);
     return unwrap(
       supabase
         .from('tasks')
         .insert({ title: title.trim(), description: description?.trim() || null, priority })
         .select()
         .single(),
+    );
+  },
+  // Filtering on deleted_at means a task deleted while its edit form was open is not saved.
+  update: async (id, { title, description, priority }) => {
+    requireValidId(id);
+    if (!title?.trim()) throw new Error('Title is required');
+    requireValidPriority(priority);
+    return requireRow(
+      supabase
+        .from('tasks')
+        .update({ title: title.trim(), description: description?.trim() || null, priority })
+        .eq('id', id)
+        .is('deleted_at', null)
+        .select()
+        .maybeSingle(),
+      id,
     );
   },
   complete: (id) =>

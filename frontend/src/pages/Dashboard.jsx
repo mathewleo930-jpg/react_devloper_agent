@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { tasksApi } from '../api/tasks.js';
 import StatCard from '../components/StatCard.jsx';
 import TaskTable from '../components/TaskTable.jsx';
@@ -13,6 +13,7 @@ function filterTasksByTitle(tasks, query) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0 });
@@ -49,6 +50,8 @@ export default function Dashboard() {
     }
   };
 
+  const handleEdit = (task) => navigate(`/tasks/${task.id}/edit`);
+
   const handleComplete = (id) => runAction(id, () => tasksApi.complete(id));
 
   const handleReopen = (id) => runAction(id, () => tasksApi.reopen(id));
@@ -80,7 +83,7 @@ export default function Dashboard() {
         {loading ? (
           <p className="empty">Loading…</p>
         ) : tasks.length === 0 ? (
-          <TaskTable tasks={tasks} busyId={busyId} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
+          <TaskTable tasks={tasks} busyId={busyId} onEdit={handleEdit} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
         ) : (
           <>
             <div className="search-field">
@@ -100,7 +103,7 @@ export default function Dashboard() {
               {visibleTasks.length === 0 ? (
                 <p className="empty">No tasks match your search.</p>
               ) : (
-                <TaskTable tasks={visibleTasks} busyId={busyId} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
+                <TaskTable tasks={visibleTasks} busyId={busyId} onEdit={handleEdit} onComplete={handleComplete} onReopen={handleReopen} onDelete={handleDelete} />
               )}
             </div>
           </>
