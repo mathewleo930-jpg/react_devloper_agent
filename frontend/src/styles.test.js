@@ -138,6 +138,20 @@ describe('character counter styles', () => {
   });
 });
 
+describe('task count styles', () => {
+  it('task count pill uses the text and hover-bg tokens', () => {
+    const body = ruleBody('.task-count');
+    expect(body).toMatch(/background:\s*var\(--hover-bg\)/);
+    expect(body).toMatch(/color:\s*var\(--text\)/);
+  });
+
+  it('task count text contrast is at least 4.5:1 in both themes', () => {
+    for (const block of Object.values(themes)) {
+      expect(contrast(token(block, '--text'), token(block, '--hover-bg'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {
