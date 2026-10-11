@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tasksApi } from '../api/tasks.js';
+import { DEFAULT_PRIORITY, PRIORITIES } from '../priority.js';
+
+const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
 export default function AddTask() {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState(DEFAULT_PRIORITY);
   const [titleError, setTitleError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -20,7 +24,7 @@ export default function AddTask() {
     setSubmitting(true);
     setSubmitError('');
     try {
-      await tasksApi.create({ title: title.trim(), description: description.trim() || null });
+      await tasksApi.create({ title: title.trim(), description: description.trim() || null, priority });
       navigate('/');
     } catch (err) {
       setSubmitError(err.message);
@@ -64,6 +68,15 @@ export default function AddTask() {
           placeholder="Optional details"
           onChange={(e) => setDescription(e.target.value)}
         />
+
+        <label htmlFor="priority">Priority</label>
+        <select id="priority" value={priority} disabled={submitting} onChange={(e) => setPriority(e.target.value)}>
+          {PRIORITIES.map((level) => (
+            <option key={level} value={level}>
+              {capitalize(level)}
+            </option>
+          ))}
+        </select>
 
         <div className="form-actions">
           <button type="button" className="btn" onClick={() => navigate('/')} disabled={submitting}>
