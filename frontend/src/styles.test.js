@@ -119,6 +119,25 @@ describe('add task form styles', () => {
   });
 });
 
+describe('character counter styles', () => {
+  it('near-limit counter uses the danger colour', () => {
+    expect(ruleBody('.char-count-near')).toMatch(/color:\s*var\(--danger\)/);
+  });
+
+  it('danger colour has at least 4.5:1 contrast with the surface in both themes', () => {
+    for (const block of Object.values(themes)) {
+      expect(contrast(token(block, '--danger'), token(block, '--surface'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('counter text uses the muted colour with at least 4.5:1 contrast in both themes', () => {
+    expect(ruleBody('.char-count')).toMatch(/color:\s*var\(--muted\)/);
+    for (const block of Object.values(themes)) {
+      expect(contrast(token(block, '--muted'), token(block, '--surface'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {

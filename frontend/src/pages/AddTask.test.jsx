@@ -235,3 +235,79 @@ describe('AddTask edit mode', () => {
     expect(tasksApi.get).not.toHaveBeenCalled();
   });
 });
+
+describe('AddTask character counters', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  const titleCount = () => document.getElementById('title-count');
+  const descriptionCount = () => document.getElementById('description-count');
+  const fillDescription = (text) =>
+    fireEvent.change(screen.getByLabelText('Description'), { target: { value: text } });
+
+  it('shows 0 / 200 under the title and 0 / 2000 under the description on an empty form', () => {
+    renderAddTask();
+    expect(titleCount().textContent).toBe('0 / 200');
+    expect(descriptionCount().textContent).toBe('0 / 2000');
+  });
+
+  it('title counter updates live as the user types', () => {
+    renderAddTask();
+    fillTitle('Plan release');
+    expect(titleCount().textContent).toBe('12 / 200');
+  });
+
+  it('description counter updates live', () => {
+    renderAddTask();
+    fillDescription('a'.repeat(120));
+    expect(descriptionCount().textContent).toBe('120 / 2000');
+  });
+
+  it('title counter turns red at 180 characters but not at 179', () => {
+    renderAddTask();
+    fillTitle('a'.repeat(179));
+    expect(titleCount().classList.contains('char-count-near')).toBe(false);
+    expect(titleCount().textContent).toBe('179 / 200');
+    fillTitle('a'.repeat(180));
+    expect(titleCount().classList.contains('char-count-near')).toBe(true);
+    expect(titleCount().textContent).toBe('180 / 200 · 20 left');
+  });
+
+  it('description counter turns red at 1800 characters', () => {
+    renderAddTask();
+    fillDescription('a'.repeat(1799));
+    expect(descriptionCount().classList.contains('char-count-near')).toBe(false);
+    fillDescription('a'.repeat(1800));
+    expect(descriptionCount().classList.contains('char-count-near')).toBe(true);
+    expect(descriptionCount().textContent).toBe('1800 / 2000 · 200 left');
+  });
+
+  it('inputs are linked to their counters with aria-describedby', () => {
+    renderAddTask();
+    expect(screen.getByLabelText(/Title/).getAttribute('aria-describedby')).toBe('title-count');
+    expect(screen.getByLabelText('Description').getAttribute('aria-describedby')).toBe('description-count');
+  });
+
+  it("edit mode counters show the loaded task's lengths", async () => {
+    await renderLoadedEditTask();
+    expect(titleCount().textContent).toBe('12 / 200');
+    expect(descriptionCount().textContent).toBe('15 / 2000');
+  });
+
+  it('title error and counter are both shown under the title', () => {
+    renderAddTask();
+    submit();
+    const error = screen.getByText('Title is required');
+    expect(error.parentElement).toBe(titleCount().parentElement);
+    expect(error.parentElement.className).toBe('field-meta');
+    expect(titleCount().textContent).toBe('0 / 200');
+  });
+
+  it('inputs keep maxLength 200 and 2000', () => {
+    renderAddTask();
+    expect(screen.getByLabelText(/Title/).maxLength).toBe(200);
+    expect(screen.getByLabelText('Description').maxLength).toBe(2000);
+  });
+});

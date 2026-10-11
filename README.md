@@ -20,10 +20,11 @@ frontend/
     pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
     pages/AddTask.jsx           # Page 2: add task form
     pages/Analytics.jsx         # Page 3: bar chart of completed / pending / deleted tasks
-    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx
+    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx, CharCounter.jsx
     hooks/useTheme.js           # Theme state, applied to <html> and saved
     theme.js                    # Theme helpers (initial choice, apply, persist)
     breakdown.js                # Turns task_stats counts into chart bars with percentages
+    charLimit.js                # Title/description limits and the near-limit check for the counters
   .env.example                  # Template for frontend/.env.local
 supabase/
   config.toml                   # Supabase CLI config
@@ -109,6 +110,14 @@ they are not counted.
 The **Add Task** form has a **Priority** dropdown (Low, Medium, High) that starts at Medium. The value is stored in
 the `priority` column added by migration `20261011000000_task_priority.sql`; existing tasks become `medium`.
 `tasksApi.create` rejects any other value with an `Invalid priority` error before calling Supabase.
+
+## Character counters
+
+On the Add Task and Edit Task forms, a live counter sits under the **Title** (`42 / 200`) and the
+**Description** (`120 / 2000`). It is grey normally and turns red and bold within 10% of the limit
+(from 180 and 1800 characters), adding how many are left, e.g. `185 / 200 · 15 left`. The fields stop
+input at the limit. Each field points to its counter with `aria-describedby`. The limits and the
+near-limit check live in `frontend/src/charLimit.js`; the counter is `frontend/src/components/CharCounter.jsx`.
 
 ## Theme
 

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TaskNotFoundError, tasksApi } from '../api/tasks.js';
+import { DESCRIPTION_MAX, TITLE_MAX } from '../charLimit.js';
+import CharCounter from '../components/CharCounter.jsx';
 import { DEFAULT_PRIORITY, PRIORITIES } from '../priority.js';
 
 const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
@@ -139,26 +141,34 @@ export default function AddTask() {
           id="title"
           type="text"
           value={title}
-          maxLength={200}
+          maxLength={TITLE_MAX}
           autoFocus
           placeholder="e.g. Prepare sprint review"
+          aria-describedby="title-count"
           className={titleError ? 'invalid' : ''}
           onChange={(e) => {
             setTitle(e.target.value);
             if (titleError) setTitleError('');
           }}
         />
-        {titleError && <p className="field-error">{titleError}</p>}
+        <div className="field-meta">
+          {titleError && <p className="field-error">{titleError}</p>}
+          <CharCounter id="title-count" length={title.length} max={TITLE_MAX} />
+        </div>
 
         <label htmlFor="description">Description</label>
         <textarea
           id="description"
           rows={4}
           value={description}
-          maxLength={2000}
+          maxLength={DESCRIPTION_MAX}
           placeholder="Optional details"
+          aria-describedby="description-count"
           onChange={(e) => setDescription(e.target.value)}
         />
+        <div className="field-meta">
+          <CharCounter id="description-count" length={description.length} max={DESCRIPTION_MAX} />
+        </div>
 
         <label htmlFor="priority">Priority</label>
         <select id="priority" value={priority} disabled={submitting} onChange={(e) => setPriority(e.target.value)}>
