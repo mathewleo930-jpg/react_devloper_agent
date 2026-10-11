@@ -103,6 +103,13 @@ describe('dashboard search styles', () => {
   });
 });
 
+describe('task row action styles', () => {
+  it('row action buttons have a 44px touch target and visible focus outline', () => {
+    expect(ruleBody('.actions .btn-sm')).toMatch(/min-height:\s*44px/);
+    expect(ruleBody('.actions .btn-sm:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+  });
+});
+
 describe('add task form styles', () => {
   it('priority select has a 44px touch target and visible focus outline', () => {
     expect(ruleBody('.form select')).toMatch(/min-height:\s*44px/);

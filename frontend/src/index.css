@@ -159,6 +159,8 @@ h2 { font-size: 1.1rem; margin: 0 0 1rem; }
 .row-done .title-cell { text-decoration: line-through; color: var(--muted); }
 .actions-col { text-align: right; }
 .actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
+.actions .btn-sm { min-height: 44px; }
+.actions .btn-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .muted { color: var(--muted); }
 .nowrap { white-space: nowrap; }
 .empty { color: var(--muted); text-align: center; padding: 1.5rem 0; margin: 0; }

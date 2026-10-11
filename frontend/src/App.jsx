@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/tasks/new" element={<AddTask />} />
+          <Route path="/tasks/:id/edit" element={<AddTask />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -3,7 +3,7 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 });
 
-export default function TaskTable({ tasks, busyId, onComplete, onReopen, onDelete }) {
+export default function TaskTable({ tasks, busyId, onEdit, onComplete, onReopen, onDelete }) {
   if (tasks.length === 0) {
     return <p className="empty">No tasks yet. Click “Add Task” to create your first one.</p>;
   }
@@ -35,6 +35,9 @@ export default function TaskTable({ tasks, busyId, onComplete, onReopen, onDelet
                 </td>
                 <td className="muted nowrap">{dateFormatter.format(new Date(task.created_at))}</td>
                 <td className="actions">
+                  <button className="btn btn-sm" disabled={busy} onClick={() => onEdit(task)}>
+                    Edit
+                  </button>
                   {done ? (
                     <button className="btn btn-sm" disabled={busy} onClick={() => onReopen(task.id)}>
                       Reopen

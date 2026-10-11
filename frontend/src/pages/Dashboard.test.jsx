@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { tasksApi } from '../api/tasks.js';
 import Dashboard from './Dashboard.jsx';
@@ -77,6 +77,25 @@ describe('Dashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
     expect(tasksApi.reopen).toHaveBeenCalledWith(3);
     await waitFor(() => expect(tasksApi.list.mock.calls.length).toBe(listCalls + 1));
+  });
+
+  it('clicking Edit opens the edit form for that task', async () => {
+    function EditRouteProbe() {
+      const { id } = useParams();
+      return <p>Editing task {id}</p>;
+    }
+    tasksApi.list.mockResolvedValueOnce(sampleTasks);
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/tasks/:id/edit" element={<EditRouteProbe />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const row = (await screen.findByText('Write report')).closest('tr');
+    fireEvent.click(within(row).getByRole('button', { name: 'Edit' }));
+    expect(screen.getByText('Editing task 2')).toBeTruthy();
   });
 });
 
