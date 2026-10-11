@@ -44,3 +44,27 @@ describe('App navigation', () => {
     await screen.findByText(/No tasks to chart yet/);
   });
 });
+
+describe('App brand', () => {
+  afterEach(cleanup);
+
+  it('brand link shows the logo before the app name', async () => {
+    renderAt('/');
+    const brand = screen.getByRole('link', { name: 'Task Manager' });
+    const logo = brand.querySelector('img');
+    expect(logo).not.toBeNull();
+    expect(logo.getAttribute('src')).toMatch(/logo\.svg$/);
+    expect(logo.getAttribute('alt')).toBe('');
+    expect(logo.getAttribute('width')).toBe('28');
+    expect(logo.getAttribute('height')).toBe('28');
+    expect(brand.firstElementChild).toBe(logo);
+    expect(brand.textContent.trim()).toBe('Task Manager');
+    await screen.findByRole('heading', { name: 'Dashboard' });
+  });
+
+  it('brand link still points home', async () => {
+    renderAt('/analytics');
+    expect(screen.getByRole('link', { name: 'Task Manager' }).getAttribute('href')).toBe('/');
+    await screen.findByText(/No tasks to chart yet/);
+  });
+});

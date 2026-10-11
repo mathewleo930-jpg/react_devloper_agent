@@ -119,6 +119,14 @@ On the Add Task and Edit Task forms, a live counter sits under the **Title** (`4
 input at the limit. Each field points to its counter with `aria-describedby`. The limits and the
 near-limit check live in `frontend/src/charLimit.js`; the counter is `frontend/src/components/CharCounter.jsx`.
 
+## Logo
+
+The company logo is `frontend/public/logo.svg`. The same file is used in the top bar (28×28, before "Task Manager")
+and as the browser tab icon (`<link rel="icon">` in `frontend/index.html`). Its colours are fixed, so it looks
+the same in the light and dark themes. The current file is a **placeholder** (an indigo tile with a white check
+mark). To replace it, overwrite `frontend/public/logo.svg` with the official SVG under the same name. The SVG needs
+a `viewBox`, and its colours need to read on both light and dark backgrounds.
+
 ## Theme
 
 The **Dark mode** button in the top bar switches between light and dark themes. The choice is saved in

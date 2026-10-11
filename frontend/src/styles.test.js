@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // jsdom does not apply stylesheets, so the CSS source is checked directly.
-const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'index.css'), 'utf8');
+const srcDir = dirname(fileURLToPath(import.meta.url));
+const css = readFileSync(join(srcDir, 'index.css'), 'utf8');
+const logoSvg = readFileSync(join(srcDir, '..', 'public', 'logo.svg'), 'utf8');
 
 function ruleBody(selector) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -169,5 +171,26 @@ describe('theme switch styles', () => {
   it('switch has a visible focus outline and 44px touch target', () => {
     expect(ruleBody('.theme-switch:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
     expect(ruleBody('.theme-switch')).toMatch(/min-height:\s*44px/);
+  });
+});
+
+describe('brand logo styles', () => {
+  const tileFill = logoSvg.match(/<rect[^>]*\sfill="(#[0-9a-fA-F]{3,6})"/)[1];
+  const checkStroke = logoSvg.match(/<path[^>]*\sstroke="(#[0-9a-fA-F]{3,6})"/)[1];
+
+  it('brand link has a 44px touch target and visible focus outline', () => {
+    expect(ruleBody('.brand')).toMatch(/min-height:\s*44px/);
+    expect(ruleBody('.brand:focus-visible')).toMatch(/outline:\s*2px solid var\(--primary\)/);
+  });
+
+  it('logo tile contrasts at least 3:1 with surface and bg in both themes', () => {
+    for (const block of Object.values(themes)) {
+      expect(contrast(tileFill, token(block, '--surface'))).toBeGreaterThanOrEqual(3);
+      expect(contrast(tileFill, token(block, '--bg'))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('logo check mark contrasts at least 3:1 with its tile', () => {
+    expect(contrast(checkStroke, tileFill)).toBeGreaterThanOrEqual(3);
   });
 });
