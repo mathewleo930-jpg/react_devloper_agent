@@ -79,7 +79,10 @@ export default function Dashboard() {
       </div>
 
       <div className="card">
-        <h2>Recent tasks</h2>
+        <h2 className="card-heading">
+          Recent tasks
+          {!loading && <span className="task-count">{stats.total} total</span>}
+        </h2>
         {loading ? (
           <p className="empty">Loading…</p>
         ) : tasks.length === 0 ? (

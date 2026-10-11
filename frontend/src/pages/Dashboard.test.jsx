@@ -162,3 +162,46 @@ describe('Dashboard task search', () => {
     expect(screen.getByText(/No tasks yet/)).toBeTruthy();
   });
 });
+
+describe('Dashboard total task count', () => {
+  afterEach(cleanup);
+
+  function recentTasksHeading() {
+    return screen.getByRole('heading', { name: /Recent tasks/ });
+  }
+
+  it('shows the total from stats next to the Recent tasks heading, not the number of listed tasks', async () => {
+    tasksApi.stats.mockResolvedValueOnce({ total: 42, pending: 30, completed: 12 });
+    await renderWithTasks();
+    expect(recentTasksHeading().textContent).toContain('42 total');
+  });
+
+  it('shows "0 total" when there are no tasks', async () => {
+    await renderDashboard();
+    expect(recentTasksHeading().textContent).toContain('0 total');
+  });
+
+  it('does not show a count while tasks are loading', () => {
+    const never = new Promise(() => {});
+    tasksApi.list.mockReturnValueOnce(never);
+    tasksApi.stats.mockReturnValueOnce(never);
+    render(
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Loading…')).toBeTruthy();
+    expect(screen.queryByText(/total$/)).toBeNull();
+  });
+
+  it('updates the count after a task action reloads the data', async () => {
+    tasksApi.stats
+      .mockResolvedValueOnce({ total: 3, pending: 2, completed: 1 })
+      .mockResolvedValueOnce({ total: 2, pending: 2, completed: 0 });
+    tasksApi.reopen.mockResolvedValueOnce({ ...sampleTasks[2], status: 'pending' });
+    await renderWithTasks();
+    expect(recentTasksHeading().textContent).toContain('3 total');
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
+    await waitFor(() => expect(recentTasksHeading().textContent).toContain('2 total'));
+  });
+});
