@@ -1,5 +1,9 @@
 # How the Task Manager works
 
+> **Note:** the frontend is now the Deskline helpdesk (see the [README](../README.md) for its pages, data model
+> and demo/Supabase modes). The Supabase setup, RLS and request flow below still apply; the page and `tasks`
+> table details describe the earlier task manager.
+
 This document explains how the frontend and backend fit together while the app runs. For how code gets
 built and deployed, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
