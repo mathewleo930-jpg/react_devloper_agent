@@ -25,6 +25,27 @@ describe('App', () => {
     expect(screen.getAllByRole('link', { name: /Open app|Explore the live demo/ }).length).toBeGreaterThan(0);
   });
 
+  it('landing shows the Diwali banner and the Business plan at $26.10, down from $29', () => {
+    renderAt('/');
+    expect(screen.getByRole('heading', { level: 2, name: 'Happy Diwali from Deskline' })).toBeTruthy();
+    const business = screen.getByRole('heading', { level: 3, name: 'Business' }).closest('article');
+    expect(within(business).getByText('$29', { selector: 's' }).textContent).toBe('Was $29');
+    expect(within(business).getByText(/\$26\.10/).textContent).toBe('Now $26.10');
+    expect(within(business).getByText(/Diwali offer · 10% off/)).toBeTruthy();
+    const starter = screen.getByRole('heading', { level: 3, name: 'Starter' }).closest('article');
+    expect(within(starter).getByText('$0')).toBeTruthy();
+    expect(within(starter).queryByText(/Diwali offer/)).toBeNull();
+  });
+
+  it('See Diwali prices moves focus to the pricing heading', () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    renderAt('/');
+    fireEvent.click(screen.getByRole('button', { name: 'See Diwali prices' }));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+    expect(document.activeElement.textContent).toBe('Simple plans that scale with you');
+    delete Element.prototype.scrollIntoView;
+  });
+
   it('app sidebar lists every workspace tab', () => {
     renderAt('/app');
     const nav = screen.getByRole('navigation', { name: 'Main' });

@@ -1,7 +1,11 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import DiwaliBanner from '../components/DiwaliBanner.jsx';
 import Icon from '../components/Icon.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import { APP_NAME } from '../data/constants.js';
+import { DIWALI_PROMO } from '../data/promotion.js';
+import { applyDiscount, formatPrice } from '../lib/pricing.js';
 
 const FEATURES = [
   { icon: 'inbox', title: 'One shared inbox', text: 'Email, chat, phone and web requests land in a single queue with views for every team.' },
@@ -19,9 +23,9 @@ const STEPS = [
 ];
 
 const PLANS = [
-  { name: 'Starter', price: '$0', period: 'forever', text: 'For small teams getting started.', features: ['3 agents', 'Email & web form', 'Basic reports'] },
-  { name: 'Business', price: '$29', period: 'per agent / mo', text: 'For growing support teams.', features: ['Unlimited agents', 'All channels', 'SLA policies', 'Kanban board'], featured: true },
-  { name: 'Enterprise', price: 'Custom', period: 'annual', text: 'For regulated and large teams.', features: ['SSO & audit logs', 'EU data residency', 'Dedicated success manager'] },
+  { name: 'Starter', amount: 0, period: 'forever', text: 'For small teams getting started.', features: ['3 agents', 'Email & web form', 'Basic reports'] },
+  { name: 'Business', amount: 29, period: 'per agent / mo', text: 'For growing support teams.', features: ['Unlimited agents', 'All channels', 'SLA policies', 'Kanban board'], featured: true },
+  { name: 'Enterprise', amount: null, period: 'annual', text: 'For regulated and large teams.', features: ['SSO & audit logs', 'EU data residency', 'Dedicated success manager'] },
 ];
 
 const FAQ = [
@@ -75,7 +79,42 @@ function ProductPreview() {
   );
 }
 
+function PlanPrice({ plan, promo }) {
+  if (plan.amount === null) {
+    return (
+      <p className="plan-price">
+        <strong>Custom</strong> <span className="muted">{plan.period}</span>
+      </p>
+    );
+  }
+  if (!promo || plan.amount === 0) {
+    return (
+      <p className="plan-price">
+        <strong>{formatPrice(plan.amount)}</strong> <span className="muted">{plan.period}</span>
+      </p>
+    );
+  }
+  return (
+    <>
+      <p className="plan-discount"><span aria-hidden="true">🪔</span> Diwali offer · {promo.percentOff}% off</p>
+      <p className="plan-price">
+        <s className="plan-price-was"><span className="visually-hidden">Was </span>{formatPrice(plan.amount)}</s>{' '}
+        <strong><span className="visually-hidden">Now </span>{formatPrice(applyDiscount(plan.amount, promo.percentOff))}</strong>{' '}
+        <span className="muted">{plan.period}</span>
+      </p>
+    </>
+  );
+}
+
 export default function Landing({ theme, onToggleTheme }) {
+  const pricingHeadingRef = useRef(null);
+
+  // HashRouter treats href="#pricing" as a route, so the banner scrolls in code instead.
+  function showPricing() {
+    document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
+    pricingHeadingRef.current.focus({ preventScroll: true });
+  }
+
   return (
     <div className="landing">
       <header className="l-nav">
@@ -98,6 +137,8 @@ export default function Landing({ theme, onToggleTheme }) {
       </header>
 
       <main>
+        {DIWALI_PROMO && <DiwaliBanner promo={DIWALI_PROMO} onShowPricing={showPricing} />}
+
         <section className="hero">
           <div className="l-wrap hero-inner">
             <span className="eyebrow">
@@ -162,7 +203,7 @@ export default function Landing({ theme, onToggleTheme }) {
           <div className="l-wrap">
             <div className="l-head">
               <span className="eyebrow-plain">Pricing</span>
-              <h2>Simple plans that scale with you</h2>
+              <h2 ref={pricingHeadingRef} tabIndex={-1}>Simple plans that scale with you</h2>
             </div>
             <div className="pricing">
               {PLANS.map((p) => (
@@ -170,9 +211,7 @@ export default function Landing({ theme, onToggleTheme }) {
                   {p.featured && <span className="plan-flag">Most popular</span>}
                   <h3>{p.name}</h3>
                   <p className="muted">{p.text}</p>
-                  <p className="plan-price">
-                    <strong>{p.price}</strong> <span className="muted">{p.period}</span>
-                  </p>
+                  <PlanPrice plan={p} promo={DIWALI_PROMO} />
                   <ul>
                     {p.features.map((f) => (
                       <li key={f}><Icon name="check" size={16} /> {f}</li>
