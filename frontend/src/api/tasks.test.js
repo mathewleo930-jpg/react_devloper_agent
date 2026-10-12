@@ -145,6 +145,50 @@ describe('tasksApi', () => {
     await expect(promise).rejects.toThrow('Task 42 not found');
   });
 
+  it('listDeleted returns only soft-deleted tasks, most recently deleted first', async () => {
+    result = { data: [{ id: 9 }], error: null };
+    expect(await tasksApi.listDeleted()).toEqual([{ id: 9 }]);
+    expect(calls).toContainEqual(['from', 'tasks']);
+    expect(calls).toContainEqual(['not', 'deleted_at', 'is', null]);
+    expect(calls).toContainEqual(['order', 'deleted_at', { ascending: false }]);
+    expect(calls).toContainEqual(['limit', 500]);
+  });
+
+  it('listDeleted caps the limit at 500', async () => {
+    result = { data: [], error: null };
+    await tasksApi.listDeleted(10_000);
+    expect(calls).toContainEqual(['limit', 500]);
+  });
+
+  it('restore clears deleted_at for the given id', async () => {
+    const row = { id: 7, status: 'completed', deleted_at: null };
+    result = { data: row, error: null };
+    expect(await tasksApi.restore(7)).toEqual(row);
+    expect(calls).toContainEqual(['update', { deleted_at: null }]);
+    expect(calls).toContainEqual(['eq', 'id', 7]);
+    expect(calls).toContainEqual(['not', 'deleted_at', 'is', null]);
+  });
+
+  it('restore throws TaskNotFoundError when the task is missing or not deleted', async () => {
+    const promise = tasksApi.restore(42);
+    await expect(promise).rejects.toBeInstanceOf(TaskNotFoundError);
+    await expect(promise).rejects.toThrow('Task 42 not found');
+  });
+
+  it('restore rejects an invalid id without calling Supabase', async () => {
+    for (const id of [0, -1, 1.5, '5', NaN, undefined]) {
+      await expect(tasksApi.restore(id)).rejects.toThrow(`Invalid task id "${id}"`);
+    }
+    expect(calls).toEqual([]);
+  });
+
+  it('restore surfaces Supabase errors as thrown Errors', async () => {
+    result = { data: null, error: { message: 'permission denied' } };
+    const promise = tasksApi.restore(7);
+    await expect(promise).rejects.toThrow('permission denied');
+    await expect(promise).rejects.not.toBeInstanceOf(TaskNotFoundError);
+  });
+
   it('get rejects an invalid id without calling Supabase', async () => {
     for (const id of [0, -1, 1.5, '5', NaN, undefined]) {
       await expect(tasksApi.get(id)).rejects.toThrow(`Invalid task id "${id}"`);

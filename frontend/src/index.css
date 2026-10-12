@@ -86,7 +86,7 @@ h2 { font-size: 1.1rem; margin: 0 0 1rem; }
 .brand:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .brand-logo { display: block; flex-shrink: 0; }
 
-.nav { display: flex; gap: 0.5rem; margin-right: auto; }
+.nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-right: auto; }
 .nav-link {
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.75rem;
   color: var(--muted); text-decoration: none; font-weight: 500;
@@ -210,6 +210,18 @@ h2 { font-size: 1.1rem; margin: 0 0 1rem; }
 .alert-retry p { margin: 0; }
 .btn-retry { min-height: 44px; }
 .btn-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.alert-success {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: var(--badge-completed-bg); color: var(--badge-completed-fg); border-color: var(--success-border);
+}
+.alert-success p { margin: 0; }
+.alert-success a { color: inherit; font-weight: 600; }
+.alert:focus-visible, .alert-success a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; padding-bottom: 1.5rem; }
+.empty-state .btn { min-height: 44px; }
+.empty-state .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .intro { margin: -0.5rem 0 1.25rem; }
 

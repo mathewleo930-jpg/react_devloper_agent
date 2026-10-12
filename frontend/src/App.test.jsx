@@ -11,7 +11,9 @@ vi.mock('./api/tasks.js', () => ({
   tasksApi: {
     list: vi.fn(() => Promise.resolve([])),
     stats: vi.fn(() => Promise.resolve({ total: 0, pending: 0, completed: 0, deleted: 0 })),
+    listDeleted: vi.fn(() => Promise.resolve([])),
   },
+  TaskNotFoundError: class TaskNotFoundError extends Error {},
 }));
 
 function renderAt(path) {
@@ -26,12 +28,13 @@ function renderAt(path) {
 describe('App navigation', () => {
   afterEach(cleanup);
 
-  it('nav has Dashboard and Analytics tabs', async () => {
+  it('nav has Dashboard, Analytics and Deleted tasks tabs', async () => {
     const nav = renderAt('/');
     const links = within(nav).getAllByRole('link');
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Dashboard', '/'],
       ['Analytics', '/analytics'],
+      ['Deleted tasks', '/deleted'],
     ]);
     expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBe('page');
     await screen.findByRole('heading', { name: 'Dashboard' });
@@ -42,6 +45,13 @@ describe('App navigation', () => {
     expect(within(nav).getByRole('link', { name: 'Analytics' }).getAttribute('aria-current')).toBe('page');
     expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBeNull();
     await screen.findByText(/No tasks to chart yet/);
+  });
+
+  it('Deleted tasks tab is marked aria-current on /deleted', async () => {
+    const nav = renderAt('/deleted');
+    expect(within(nav).getByRole('link', { name: 'Deleted tasks' }).getAttribute('aria-current')).toBe('page');
+    expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBeNull();
+    await screen.findByText(/No deleted tasks\./);
   });
 });
 

@@ -2,6 +2,7 @@ import { Link, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
 import AddTask from './pages/AddTask.jsx';
 import Analytics from './pages/Analytics.jsx';
+import DeletedTasks from './pages/DeletedTasks.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import useTheme from './hooks/useTheme.js';
 
@@ -18,6 +19,7 @@ export default function App() {
         <nav aria-label="Main" className="nav">
           <NavLink to="/" end className="nav-link">Dashboard</NavLink>
           <NavLink to="/analytics" className="nav-link">Analytics</NavLink>
+          <NavLink to="/deleted" className="nav-link">Deleted tasks</NavLink>
         </nav>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </header>
@@ -25,6 +27,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/deleted" element={<DeletedTasks />} />
           <Route path="/tasks/new" element={<AddTask />} />
           <Route path="/tasks/:id/edit" element={<AddTask />} />
           <Route path="*" element={<Navigate to="/" replace />} />

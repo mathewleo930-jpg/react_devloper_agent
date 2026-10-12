@@ -154,6 +154,31 @@ describe('task count styles', () => {
   });
 });
 
+describe('deleted tasks styles', () => {
+  it('success alert uses the completed badge and success border tokens', () => {
+    const body = ruleBody('.alert-success');
+    expect(body).toMatch(/background:\s*var\(--badge-completed-bg\)/);
+    expect(body).toMatch(/color:\s*var\(--badge-completed-fg\)/);
+    expect(body).toMatch(/border-color:\s*var\(--success-border\)/);
+  });
+
+  it('success alert text contrast is at least 4.5:1 in both themes', () => {
+    for (const block of Object.values(themes)) {
+      expect(
+        contrast(token(block, '--badge-completed-fg'), token(block, '--badge-completed-bg')),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('nav wraps so three links fit on narrow screens', () => {
+    expect(ruleBody('.nav')).toMatch(/flex-wrap:\s*wrap/);
+  });
+
+  it('empty-state button has a 44px touch target', () => {
+    expect(ruleBody('.empty-state .btn')).toMatch(/min-height:\s*44px/);
+  });
+});
+
 describe('theme switch styles', () => {
   it('switch track colours contrast at least 3:1 with the surface in both themes', () => {
     for (const block of Object.values(themes)) {
