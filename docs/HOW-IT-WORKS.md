@@ -47,7 +47,8 @@ frontend/
     pages/Dashboard.jsx       # page 1: stats + recent tasks + complete/delete
     pages/AddTask.jsx         # page 2: add-task form
     pages/Analytics.jsx       # page 3: completed / pending / deleted bar chart
-    components/               # StatCard, TaskTable, ThemeToggle, BreakdownChart
+    pages/DeletedTasks.jsx    # page 4: deleted tasks with Restore
+    components/               # StatCard, TaskTable, DeletedTaskTable, ThemeToggle, BreakdownChart
     breakdown.js              # task_stats row → chart bars with percentages
     hooks/useTheme.js, theme.js   # light/dark theme
 ```
@@ -58,6 +59,7 @@ frontend/
 |---|---|---|
 | `#/` | Dashboard | Shows total / pending / completed counts and the 20 newest tasks; complete or delete a task |
 | `#/analytics` | Analytics | Bar chart, summary sentence and counts for completed, pending and deleted tasks |
+| `#/deleted` | Deleted tasks | Lists deleted tasks, newest deletion first, with the deletion date; Restore puts one back on the Dashboard |
 | `#/tasks/new` | Add Task | Form with title (required, ≤ 200) and description (optional, ≤ 2000) |
 | anything else | redirects to `#/` | |
 
@@ -101,8 +103,9 @@ task_stats (view over tasks)
 ```
 
 Deleting is a **soft delete**: it sets `deleted_at` and keeps the row, so the Analytics tab can count
-deleted tasks. Every query for tasks filters on `deleted_at is null`, so deleted tasks never show on the
-Dashboard and cannot be completed.
+deleted tasks. Every Dashboard query filters on `deleted_at is null`, so deleted tasks never show on the
+Dashboard and cannot be completed. Only the Deleted tasks page reads rows with `deleted_at is not null`, and
+its Restore button sets `deleted_at` back to null.
 
 Validation lives in the database as `check` constraints, so bad data is rejected even if it bypasses the
 form.
@@ -153,6 +156,8 @@ sequenceDiagram
 | Submit Add Task form | `create(...)` | `POST /tasks` | `insert into tasks (title, description) … returning *` |
 | Click Complete | `complete(id)` | `PATCH /tasks?id=eq.<id>&deleted_at=is.null` | `update tasks set status='completed' where id=<id> and deleted_at is null returning *` |
 | Click Delete | `remove(id)` | `PATCH /tasks?id=eq.<id>&deleted_at=is.null` | `update tasks set deleted_at=<now> where id=<id> and deleted_at is null returning id` |
+| Open Deleted tasks | `listDeleted()` | `GET /tasks?deleted_at=not.is.null&order=deleted_at.desc,id.desc&limit=500` | `select * from tasks where deleted_at is not null order by deleted_at desc, id desc limit 500` |
+| Click Restore | `restore(id)` | `PATCH /tasks?id=eq.<id>&deleted_at=not.is.null` | `update tasks set deleted_at=null where id=<id> and deleted_at is not null returning *` |
 
 After any Complete or Delete, the Dashboard re-runs `list` and `stats` so the counts and table stay in
 sync. The Analytics page loads `stats` each time it opens and shows a friendly message with a **Retry**

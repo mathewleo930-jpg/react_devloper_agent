@@ -95,4 +95,28 @@ export const tasksApi = {
     );
     return null;
   },
+  listDeleted: (limit) =>
+    unwrap(
+      supabase
+        .from('tasks')
+        .select('*')
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(Math.min(limit ?? MAX_LIMIT, MAX_LIMIT)),
+    ),
+  // Only deleted_at is cleared, so status and priority come back unchanged on the Dashboard.
+  restore: async (id) => {
+    requireValidId(id);
+    return requireRow(
+      supabase
+        .from('tasks')
+        .update({ deleted_at: null })
+        .eq('id', id)
+        .not('deleted_at', 'is', null)
+        .select()
+        .maybeSingle(),
+      id,
+    );
+  },
 };

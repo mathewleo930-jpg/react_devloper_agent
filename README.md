@@ -3,7 +3,7 @@ Creating a test web app for testing the Developer Kit
 
 
 ## Task Manager
-A task management app (Dashboard, Add Task and Analytics pages): **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
+A task management app (Dashboard, Add Task, Analytics and Deleted tasks pages): **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
 
 Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
@@ -20,7 +20,8 @@ frontend/
     pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
     pages/AddTask.jsx           # Page 2: add task form
     pages/Analytics.jsx         # Page 3: bar chart of completed / pending / deleted tasks
-    components/StatCard.jsx, TaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx, CharCounter.jsx
+    pages/DeletedTasks.jsx      # Page 4: deleted tasks with their deletion dates and a Restore button
+    components/StatCard.jsx, TaskTable.jsx, DeletedTaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx, CharCounter.jsx
     hooks/useTheme.js           # Theme state, applied to <html> and saved
     theme.js                    # Theme helpers (initial choice, apply, persist)
     breakdown.js                # Turns task_stats counts into chart bars with percentages
@@ -75,7 +76,7 @@ From `frontend/` (Node ≥ 18):
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173 (Analytics tab: http://localhost:5173/#/analytics)
+npm run dev      # http://localhost:5173 (Analytics: /#/analytics, Deleted tasks: /#/deleted)
 npm test         # Vitest unit tests
 npm run build    # output in frontend/dist, built for the /react_devloper_agent/ path
 ```
@@ -104,6 +105,16 @@ To count deleted tasks, deleting is now a **soft delete**: the Dashboard's Delet
 `deleted_at` instead of removing the row (migration `20261010000000_soft_delete_tasks.sql`). Deleted tasks
 are hidden from the Dashboard and its counts. Tasks deleted before this migration were removed for good, so
 they are not counted.
+
+## Deleted tasks
+
+The **Deleted tasks** tab in the top bar (`#/deleted`) lists every soft-deleted task, most recently deleted
+first, with the date and time it was deleted. Each row has a **Restore** button: it calls
+`tasksApi.restore(id)`, which sets `deleted_at` back to null, so the task returns to the Dashboard with its
+status and priority unchanged. A green message ("“Buy milk” is back on your Dashboard.") confirms it. If the
+task was already restored elsewhere, the page says so and reloads the list. When nothing has been deleted,
+the page shows "No deleted tasks" with a link back to the Dashboard. No migration is needed: the existing
+`deleted_at` column and update policy cover it.
 
 ## Task priority
 
