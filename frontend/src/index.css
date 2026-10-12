@@ -40,6 +40,13 @@
   --pr-medium: #ca8a04;
   --pr-low: #9ca3af;
 
+  --festive-bg-from: #7c2d12;
+  --festive-bg-to: #9a3412;
+  --festive-text: #fff7ed;
+  --festive-accent: #fbbf24;
+  --festive-soft: #fff7ed;
+  --festive-ink: #9a3412;
+
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 14px;
@@ -93,6 +100,9 @@
   --pr-high: #fb923c;
   --pr-medium: #facc15;
   --pr-low: #6b7280;
+
+  --festive-soft: rgba(251, 146, 60, 0.14);
+  --festive-ink: #fdba74;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
@@ -831,6 +841,52 @@ textarea.input { resize: vertical; line-height: 1.55; }
 .l-nav-actions { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
 @media (max-width: 760px) { .l-links { display: none; } }
 
+.promo {
+  padding: 24px 0; color: var(--festive-text);
+  background: linear-gradient(120deg, var(--festive-bg-from), var(--festive-bg-to));
+}
+.promo-inner { display: flex; align-items: center; gap: 16px; }
+.promo-media {
+  position: relative; flex-shrink: 0; width: 120px; height: 120px; overflow: hidden;
+  border: 2px solid var(--festive-accent); border-radius: var(--radius-lg); background: var(--festive-bg-from);
+}
+.promo-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.promo-diya { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.promo-flame {
+  width: 18px; height: 28px; margin-bottom: -2px; border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  background: linear-gradient(to top, var(--festive-accent), #fde68a);
+  box-shadow: 0 0 16px 4px rgba(251, 191, 36, 0.45);
+  transform-origin: 50% 100%; animation: promo-flicker 1.8s ease-in-out infinite alternate;
+}
+.promo-bowl { width: 60px; height: 30px; border-radius: 0 0 30px 30px; background: #d97706; }
+.promo-diya-caption { margin-top: 8px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; }
+@keyframes promo-flicker {
+  from { transform: scale(1) rotate(-2deg); }
+  to { transform: scale(1.08, 0.94) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce) { .promo-flame { animation: none; } }
+.promo-text { flex: 1; min-width: 0; }
+.promo h2 { color: var(--festive-text); font-size: clamp(1.25rem, 3vw, 1.6rem); font-weight: 750; letter-spacing: -0.02em; line-height: 1.2; }
+.promo-text p { margin-top: 4px; font-size: 1rem; line-height: 1.5; }
+.promo-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+.promo-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+  border: 1px solid var(--festive-accent); font-size: 0.8125rem; font-weight: 600;
+}
+.promo-cta { background: var(--festive-text); border-color: var(--festive-text); color: var(--festive-ink); font-weight: 650; }
+.promo-cta:hover:not(:disabled) { background: #ffedd5; }
+:root[data-theme='dark'] .promo-cta { color: #9a3412; }
+.promo-cta:focus-visible { outline: 3px solid var(--festive-accent); outline-offset: 2px; box-shadow: none; }
+@media (max-width: 760px) {
+  .promo { padding: 16px 0; }
+  .promo-inner { flex-direction: column; text-align: center; }
+  .promo-media { width: 72px; height: 72px; }
+  .promo-flame { width: 12px; height: 18px; }
+  .promo-bowl { width: 36px; height: 18px; }
+  .promo-diya-caption { display: none; }
+  .promo-actions, .promo-cta { width: 100%; }
+}
+
 .hero {
   position: relative; overflow: hidden; padding: 5rem 0 0;
   background:
@@ -939,8 +995,15 @@ textarea.input { resize: vertical; line-height: 1.55; }
   background: var(--primary); color: var(--on-primary); font-size: 0.72rem; font-weight: 600;
 }
 .plan-card h3 { font-size: 1.1rem; }
-.plan-price { margin: 0.5rem 0; }
+.plan-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; margin: 0.5rem 0; }
 .plan-price strong { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; }
+.plan-price-was { font-size: 1.1rem; font-weight: 600; color: var(--muted); }
+.plan-discount {
+  align-self: flex-start; padding: 0.2rem 0.65rem; border-radius: 999px;
+  background: var(--festive-soft); color: var(--festive-ink); font-size: 0.8125rem; font-weight: 600;
+}
+/* Shown on any focus: the banner CTA moves focus here in code, often after a mouse click. */
+#pricing h2:focus { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
 .plan-card ul { list-style: none; margin: 0 0 1.25rem; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; flex: 1; }
 .plan-card li { display: flex; align-items: center; gap: 0.5rem; color: var(--text-2); }
 .plan-card li .icon { color: var(--success); }

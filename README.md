@@ -124,6 +124,11 @@ The product name lives in `APP_NAME` in `frontend/src/data/constants.js`. The lo
 used in the sidebar, the landing page and as the browser tab icon. The current file is a **placeholder**: overwrite
 it with the official SVG under the same name, keeping a `viewBox` and colours that read on light and dark backgrounds.
 
+## Diwali offer
+
+The landing page shows a Diwali banner and 10% off paid plans (Business: ~~$29~~ $26.10). The offer lives in
+`frontend/src/data/promotion.js`; set `DIWALI_PROMO` to `null` to switch both off. Photo credits are in `CREDITS.md`.
+
 ## Theme
 
 The theme switch in the top bar toggles light and dark. The choice is saved in `localStorage` (key `theme`);
