@@ -2,60 +2,95 @@
 Creating a test web app for testing the Developer Kit
 
 
-## Task Manager
-A task management app (Dashboard, Add Task, Analytics and Deleted tasks pages): **React (Vite)** frontend on **GitHub Pages**, with **Supabase** (Postgres + auto REST API) as the backend.
+## Deskline helpdesk
+A helpdesk ticketing app: **React (Vite)** frontend on **GitHub Pages**, with optional **Supabase** (Postgres + auto REST API) as the backend.
 
 Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
 - [How it works](docs/HOW-IT-WORKS.md): frontend, Supabase backend and the request flow
 - [Deployment](docs/DEPLOYMENT.md): both GitHub Actions workflows and how to ship changes
 
+## Pages
+
+| Route | Page | What it does |
+|-------|------|--------------|
+| `#/` | Landing | Product page: hero, features, how it works, pricing, FAQ, links into the app |
+| `#/app` | Overview | Key metrics (open, unassigned, SLA breached, first response, solved this week), 7-day volume, status breakdown, tickets needing attention, team workload, latest activity |
+| `#/app/tickets` | Tickets | View tabs (Open, My tickets, Unassigned, Urgent, Pending, Solved, All), search, priority/assignee/category filters, sorting, bulk assign and bulk status change |
+| `#/app/tickets/:id` | Ticket detail | Conversation and activity tabs, public replies and internal notes, canned replies, editable status/priority/assignee/category, customer card with their other tickets |
+| `#/app/tickets/new` | New ticket | Customer, subject, description (with character counters), priority, category, channel, assignee |
+| `#/app/board` | Board | Kanban columns per status; drag a card, or use its status menu, to move it |
+| `#/app/customers` | Customers | Plan tabs, search, open and total ticket counts, latest ticket |
+| `#/app/team` | Team | Agent cards with presence, open/solved counts, CSAT and workload |
+| `#/app/reports` | Reports | Date range, response and resolution times, SLA compliance, volume by category/channel/priority, agent leaderboard |
+| `#/app/settings` | Settings | General, SLA policies, notifications, data source and demo reset |
+
+Each priority has a resolution target (Urgent 4h, High 8h, Medium 24h, Low 72h). Open tickets show the time left,
+turn amber with under 25% left and red once overdue.
+
+## Data: demo mode or Supabase
+
+The app picks its data source from the environment:
+
+- **Demo mode** (no `VITE_SUPABASE_*` variables): starts with the sample workspace in `src/data/mockData.js`
+  and saves every change to `localStorage` (key `deskline:v1`). Settings → Data → **Reset** restores the samples.
+- **Supabase** (both variables set): loads agents, customers and tickets from the database. Each change shows
+  on screen straight away, then the changed ticket, its new messages and its new activity are written. If a write
+  fails, a toast says so and the workspace reloads from the database.
+
+The top bar shows **Demo data** or **Live** so you can tell which mode is active.
+
 ## Project structure
 
 ```
 frontend/
   src/
-    lib/supabase.js             # Supabase client (reads VITE_SUPABASE_* env vars)
-    api/tasks.js                # Task queries against Supabase
-    pages/Dashboard.jsx         # Page 1: stats + recent tasks + actions
-    pages/AddTask.jsx           # Page 2: add task form
-    pages/Analytics.jsx         # Page 3: bar chart of completed / pending / deleted tasks
-    pages/DeletedTasks.jsx      # Page 4: deleted tasks with their deletion dates and a Restore button
-    components/StatCard.jsx, TaskTable.jsx, DeletedTaskTable.jsx, ThemeToggle.jsx, BreakdownChart.jsx, CharCounter.jsx
-    hooks/useTheme.js           # Theme state, applied to <html> and saved
-    theme.js                    # Theme helpers (initial choice, apply, persist)
-    breakdown.js                # Turns task_stats counts into chart bars with percentages
-    charLimit.js                # Title/description limits and the near-limit check for the counters
+    App.jsx                     # Routes: landing at /, the app under /app
+    layouts/AppLayout.jsx       # Sidebar, top bar with global search, loading/error states
+    pages/                      # Landing, Overview, Tickets, TicketDetail, NewTicket, Board, Customers, Team, Reports, Settings
+    components/                 # Icon, Avatar, Badges (status/priority/SLA), Charts, ThemeToggle, CharCounter
+    store/ticketReducer.js      # Pure state changes: create, update, bulk update, reply, reset
+    store/TicketStore.jsx       # Context provider: local or Supabase persistence, toasts
+    api/tickets.js              # Supabase queries and row ↔ ticket mapping
+    data/constants.js           # Statuses, priorities and SLA hours, categories, channels, product name
+    data/mockData.js            # Demo agents, customers and tickets
+    lib/format.js               # Relative times, durations, initials, SLA state
+    lib/supabase.js             # Supabase client, or null in demo mode
+    hooks/useTheme.js, theme.js # Light/dark theme, saved in localStorage
+    charLimit.js                # Subject/description limits for the counters
   .env.example                  # Template for frontend/.env.local
 supabase/
-  config.toml                   # Supabase CLI config
-  migrations/                   # SQL schema: tasks table, task_stats view, RLS policies
-.github/workflows/deploy-pages.yml        # Test, build and deploy frontend on push to main
-.github/workflows/supabase-migrations.yml # Preview migrations on PRs, apply them on merge to main
-docs/
-  HOW-IT-WORKS.md               # How frontend and backend work together
-  DEPLOYMENT.md                 # Logic and flow of both deployments
+  migrations/                   # SQL schema and demo seed
+.github/workflows/              # Pages deploy and Supabase migrations
 ```
 
 ## Data model
 
-| Object       | Description                                                       |
-|--------------|-------------------------------------------------------------------|
-| `tasks`      | `id`, `title` (1-200 chars), `description` (≤2000), `status` (`pending`/`completed`), `priority` (`low`/`medium`/`high`, default `medium`), `created_at`, `deleted_at` (set when deleted) |
-| `task_stats` | View with `total`, `pending`, `completed` counts of tasks that are not deleted, plus `deleted` |
+| Table             | Columns |
+|-------------------|---------|
+| `agents`          | `id`, `name`, `email`, `role`, `team`, `presence` (`online`/`away`/`offline`), `csat` (0–100) |
+| `customers`       | `id`, `name`, `email`, `company`, `plan` (`Starter`/`Business`/`Enterprise`), `location` |
+| `tickets`         | `number` (shown as `TCK-<number>`), `subject` (1–200), `status` (`open`/`in_progress`/`pending`/`resolved`/`closed`), `priority` (`low`/`medium`/`high`/`urgent`), `category`, `channel`, `customer_id`, `assignee_id`, `tags`, `created_at`, `updated_at`, `first_response_at` |
+| `ticket_messages` | `ticket_no`, `author` (`customer`/`agent`), `author_id`, `body`, `internal`, `created_at` |
+| `ticket_activity` | `ticket_no`, `text`, `created_at` |
 
-Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can
-add, complete and delete tasks**. Add Supabase Auth and per-user policies before using it for real data.
+Migrations `20261012000000_ticketing.sql` (schema) and `20261012000100_ticketing_demo_seed.sql` (the same sample
+workspace as demo mode, with timestamps relative to when it runs) add these tables. The older `tasks` table is left
+in place but no longer used by the frontend.
+
+Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can read tickets and
+create or update them**. Messages and activity are append-only. Add Supabase Auth and per-user policies before
+using this for real data. The signed-in agent is fixed to `a1` (Priya Nair) until then.
 
 ## Setup
 
 1. **Database:** applied automatically by the **Supabase migrations** workflow (see [Deployment](docs/DEPLOYMENT.md)).
-2. **Local env:** copy `frontend/.env.example` to `frontend/.env.local` and fill in the Project URL and
-   publishable key (Supabase → Project Settings → Data API / API Keys). `.env*` files are gitignored.
+2. **Local env (optional):** copy `frontend/.env.example` to `frontend/.env.local` and fill in the Project URL and
+   publishable key (Supabase → Project Settings → Data API / API Keys). Skip this to run in demo mode. `.env*` files are gitignored.
 3. **GitHub (one time):**
    - Settings → Pages → Source: **GitHub Actions**.
    - Settings → Secrets and variables → Actions → **Variables**: add `VITE_SUPABASE_URL` and
-     `VITE_SUPABASE_PUBLISHABLE_KEY`.
+     `VITE_SUPABASE_PUBLISHABLE_KEY` (leave them out to deploy in demo mode).
    - Settings → Secrets and variables → Actions → **Secrets**: add `SUPABASE_DB_URL`.
 
 ## Database changes
@@ -76,72 +111,21 @@ From `frontend/` (Node ≥ 18):
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173 (Analytics: /#/analytics, Deleted tasks: /#/deleted)
+npm run dev      # http://localhost:5173 (app: /#/app)
 npm test         # Vitest unit tests
 npm run build    # output in frontend/dist, built for the /react_devloper_agent/ path
 ```
 
 Every push to `main` runs the tests, builds and deploys to GitHub Pages.
 
-## Task search
+## Branding
 
-The Dashboard's **Recent tasks** card has a search box above the table. As you type, it filters the loaded tasks
-by title. Matching ignores case and surrounding spaces, and descriptions are not searched. If nothing matches,
-the card shows "No tasks match your search." The stats cards always show the full counts. When there are no
-tasks at all, the search box is hidden and the usual "No tasks yet" message is shown.
-
-## Reopening tasks
-
-In the Dashboard's **Recent tasks** table, completed tasks have a **Reopen** button where pending tasks have
-**Complete**. Reopen calls `tasksApi.reopen(id)`, which sets the task's status back to `pending`. The table and
-stat cards then reload. Reopening a missing or deleted task shows "Task <id> not found" in the error banner.
-
-## Analytics
-
-The **Analytics** tab in the top bar (`#/analytics`) shows a bar chart of how many tasks are completed,
-pending and deleted, with each share as a percentage and a one-sentence summary.
-
-To count deleted tasks, deleting is now a **soft delete**: the Dashboard's Delete button sets the task's
-`deleted_at` instead of removing the row (migration `20261010000000_soft_delete_tasks.sql`). Deleted tasks
-are hidden from the Dashboard and its counts. Tasks deleted before this migration were removed for good, so
-they are not counted.
-
-## Deleted tasks
-
-The **Deleted tasks** tab in the top bar (`#/deleted`) lists every soft-deleted task, most recently deleted
-first, with the date and time it was deleted. Each row has a **Restore** button: it calls
-`tasksApi.restore(id)`, which sets `deleted_at` back to null, so the task returns to the Dashboard with its
-status and priority unchanged. A green message ("“Buy milk” is back on your Dashboard.") confirms it. If the
-task was already restored elsewhere, the page says so and reloads the list. When nothing has been deleted,
-the page shows "No deleted tasks" with a link back to the Dashboard. No migration is needed: the existing
-`deleted_at` column and update policy cover it.
-
-## Task priority
-
-The **Add Task** form has a **Priority** dropdown (Low, Medium, High) that starts at Medium. The value is stored in
-the `priority` column added by migration `20261011000000_task_priority.sql`; existing tasks become `medium`.
-`tasksApi.create` rejects any other value with an `Invalid priority` error before calling Supabase.
-
-## Character counters
-
-On the Add Task and Edit Task forms, a live counter sits under the **Title** (`42 / 200`) and the
-**Description** (`120 / 2000`). It is grey normally and turns red and bold within 10% of the limit
-(from 180 and 1800 characters), adding how many are left, e.g. `185 / 200 · 15 left`. The fields stop
-input at the limit. Each field points to its counter with `aria-describedby`. The limits and the
-near-limit check live in `frontend/src/charLimit.js`; the counter is `frontend/src/components/CharCounter.jsx`.
-
-## Logo
-
-The company logo is `frontend/public/logo.svg`. The same file is used in the top bar (28×28, before "Task Manager")
-and as the browser tab icon (`<link rel="icon">` in `frontend/index.html`). Its colours are fixed, so it looks
-the same in the light and dark themes. The current file is a **placeholder** (an indigo tile with a white check
-mark). To replace it, overwrite `frontend/public/logo.svg` with the official SVG under the same name. The SVG needs
-a `viewBox`, and its colours need to read on both light and dark backgrounds.
+The product name lives in `APP_NAME` in `frontend/src/data/constants.js`. The logo is `frontend/public/logo.svg`,
+used in the sidebar, the landing page and as the browser tab icon. The current file is a **placeholder**: overwrite
+it with the official SVG under the same name, keeping a `viewBox` and colours that read on light and dark backgrounds.
 
 ## Theme
 
-The **Dark mode** button in the top bar switches between light and dark themes. The choice is saved in
-`localStorage` (key `theme`); without a saved choice the app follows the OS `prefers-color-scheme` setting.
-
-The Dashboard's **+ Add Task** button uses the blue `btn-add` style (`--add-bg`, `--add-hover-bg` and
-`--on-add` in `frontend/src/index.css`), with colours for both themes that keep text contrast at 4.5:1 or higher.
+The theme switch in the top bar toggles light and dark. The choice is saved in `localStorage` (key `theme`);
+without one the app follows the OS `prefers-color-scheme` setting. Colours are tokens on `:root` in
+`frontend/src/index.css`, redefined under `:root[data-theme='dark']`.

@@ -1,80 +1,58 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
+import { createSeedState } from './data/mockData.js';
 
 vi.mock('./hooks/useTheme.js', () => ({
   default: () => ({ theme: 'light', toggleTheme: () => {} }),
 }));
 
-vi.mock('./api/tasks.js', () => ({
-  tasksApi: {
-    list: vi.fn(() => Promise.resolve([])),
-    stats: vi.fn(() => Promise.resolve({ total: 0, pending: 0, completed: 0, deleted: 0 })),
-    listDeleted: vi.fn(() => Promise.resolve([])),
-  },
-  TaskNotFoundError: class TaskNotFoundError extends Error {},
-}));
-
 function renderAt(path) {
-  render(
+  return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <App initialState={createSeedState()} remote={false} />
     </MemoryRouter>,
   );
-  return screen.getByRole('navigation', { name: 'Main' });
 }
 
-describe('App navigation', () => {
+describe('App', () => {
   afterEach(cleanup);
 
-  it('nav has Dashboard, Analytics and Deleted tasks tabs', async () => {
-    const nav = renderAt('/');
-    const links = within(nav).getAllByRole('link');
-    expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
-      ['Dashboard', '/'],
-      ['Analytics', '/analytics'],
-      ['Deleted tasks', '/deleted'],
-    ]);
-    expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBe('page');
-    await screen.findByRole('heading', { name: 'Dashboard' });
-  });
-
-  it('Analytics tab is marked aria-current on /analytics', async () => {
-    const nav = renderAt('/analytics');
-    expect(within(nav).getByRole('link', { name: 'Analytics' }).getAttribute('aria-current')).toBe('page');
-    expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBeNull();
-    await screen.findByText(/No tasks to chart yet/);
-  });
-
-  it('Deleted tasks tab is marked aria-current on /deleted', async () => {
-    const nav = renderAt('/deleted');
-    expect(within(nav).getByRole('link', { name: 'Deleted tasks' }).getAttribute('aria-current')).toBe('page');
-    expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')).toBeNull();
-    await screen.findByText(/No deleted tasks\./);
-  });
-});
-
-describe('App brand', () => {
-  afterEach(cleanup);
-
-  it('brand link shows the logo before the app name', async () => {
+  it('shows the landing page at /', () => {
     renderAt('/');
-    const brand = screen.getByRole('link', { name: 'Task Manager' });
-    const logo = brand.querySelector('img');
-    expect(logo).not.toBeNull();
-    expect(logo.getAttribute('src')).toMatch(/logo\.svg$/);
-    expect(logo.getAttribute('alt')).toBe('');
-    expect(logo.getAttribute('width')).toBe('28');
-    expect(logo.getAttribute('height')).toBe('28');
-    expect(brand.firstElementChild).toBe(logo);
-    expect(brand.textContent.trim()).toBe('Task Manager');
-    await screen.findByRole('heading', { name: 'Dashboard' });
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/resolved on time/);
+    expect(screen.getAllByRole('link', { name: /Open app|Explore the live demo/ }).length).toBeGreaterThan(0);
   });
 
-  it('brand link still points home', async () => {
-    renderAt('/analytics');
-    expect(screen.getByRole('link', { name: 'Task Manager' }).getAttribute('href')).toBe('/');
-    await screen.findByText(/No tasks to chart yet/);
+  it('app sidebar lists every workspace tab', () => {
+    renderAt('/app');
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    const labels = within(nav).getAllByRole('link').map((l) => l.textContent.replace(/\d+$/, ''));
+    expect(labels.slice(0, 6)).toEqual(['Overview', 'Tickets', 'Board', 'Customers', 'Team', 'Reports']);
+    expect(within(nav).getByRole('link', { name: 'Overview' }).getAttribute('aria-current')).toBe('page');
+  });
+
+  it('ticket view tabs filter the list', () => {
+    renderAt('/app/tickets');
+    const rowsIn = () => screen.getAllByRole('row').length - 1;
+    const open = rowsIn();
+    fireEvent.click(screen.getByRole('tab', { name: /^Solved/ }));
+    expect(screen.getByRole('tab', { name: /^Solved/ }).getAttribute('aria-selected')).toBe('true');
+    expect(rowsIn()).not.toBe(open);
+    expect(screen.getAllByText(/Resolved|Closed/, { selector: '.status-badge' }).length).toBe(rowsIn());
+  });
+
+  it('replying on a ticket adds the message to the thread', () => {
+    renderAt('/app/tickets/TCK-1044');
+    expect(screen.getByRole('heading', { name: 'Webhook deliveries failing with 401' })).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/Reply to/), { target: { value: 'Rotating your signing secret now.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(screen.getByText('Rotating your signing secret now.')).toBeTruthy();
+  });
+
+  it('shows not found for an unknown ticket', () => {
+    renderAt('/app/tickets/TCK-9');
+    expect(screen.getByRole('heading', { name: 'Ticket not found' })).toBeTruthy();
   });
 });
