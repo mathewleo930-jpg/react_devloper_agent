@@ -14,7 +14,7 @@ Live site: https://mathewleo930-jpg.github.io/react_devloper_agent/
 
 | Route | Page | What it does |
 |-------|------|--------------|
-| `#/` | Landing | Product page: hero, features, how it works, pricing, FAQ, links into the app |
+| `#/` | Landing | Product page: hero, features, how it works, pricing, FAQ, feedback form (rating, topic, message, optional email), links into the app |
 | `#/app` | Overview | Key metrics (open, unassigned, SLA breached, first response, solved this week), 7-day volume, status breakdown, tickets needing attention, team workload, latest activity |
 | `#/app/tickets` | Tickets | View tabs (Open, My tickets, Unassigned, Urgent, Pending, Solved, All), search, priority/assignee/category filters, sorting, bulk assign and bulk status change |
 | `#/app/tickets/:id` | Ticket detail | Conversation and activity tabs, public replies and internal notes, canned replies, editable status/priority/assignee/category, customer card with their other tickets |
@@ -34,6 +34,7 @@ The app picks its data source from the environment:
 
 - **Demo mode** (no `VITE_SUPABASE_*` variables): starts with the sample workspace in `src/data/mockData.js`
   and saves every change to `localStorage` (key `deskline:v1`). Settings → Data → **Reset** restores the samples.
+  Landing-page feedback is kept under `deskline:feedback:v1` (newest 50 entries).
 - **Supabase** (both variables set): loads agents, customers and tickets from the database. Each change shows
   on screen straight away, then the changed ticket, its new messages and its new activity are written. If a write
   fails, a toast says so and the workspace reloads from the database.
@@ -48,10 +49,12 @@ frontend/
     App.jsx                     # Routes: landing at /, the app under /app
     layouts/AppLayout.jsx       # Sidebar, top bar with global search, loading/error states
     pages/                      # Landing, Overview, Tickets, TicketDetail, NewTicket, Board, Customers, Team, Reports, Settings
-    components/                 # Icon, Avatar, Badges (status/priority/SLA), Charts, ThemeToggle, CharCounter
+    components/                 # Icon, Avatar, Badges (status/priority/SLA), Charts, ThemeToggle, CharCounter, FeedbackSection
     store/ticketReducer.js      # Pure state changes: create, update, bulk update, reply, reset
     store/TicketStore.jsx       # Context provider: local or Supabase persistence, toasts
     api/tickets.js              # Supabase queries and row ↔ ticket mapping
+    api/feedback.js             # Saves landing-page feedback to Supabase or localStorage
+    lib/feedback.js             # Feedback topics, rating labels and validation
     data/constants.js           # Statuses, priorities and SLA hours, categories, channels, product name
     data/mockData.js            # Demo agents, customers and tickets
     lib/format.js               # Relative times, durations, initials, SLA state
@@ -73,6 +76,7 @@ supabase/
 | `tickets`         | `number` (shown as `TCK-<number>`), `subject` (1–200), `status` (`open`/`in_progress`/`pending`/`resolved`/`closed`), `priority` (`low`/`medium`/`high`/`urgent`), `category`, `channel`, `customer_id`, `assignee_id`, `tags`, `created_at`, `updated_at`, `first_response_at` |
 | `ticket_messages` | `ticket_no`, `author` (`customer`/`agent`), `author_id`, `body`, `internal`, `created_at` |
 | `ticket_activity` | `ticket_no`, `text`, `created_at` |
+| `feedback`        | `id`, `rating` (1–5), `topic` (`General`/`Feature request`/`Bug report`/`Pricing`/`Ease of use`), `message` (10–2000), `email` (optional), `created_at` |
 
 Migrations `20261012000000_ticketing.sql` (schema) and `20261012000100_ticketing_demo_seed.sql` (the same sample
 workspace as demo mode, with timestamps relative to when it runs) add these tables. The older `tasks` table is left
@@ -81,6 +85,9 @@ in place but no longer used by the frontend.
 Row Level Security is on, with open policies: there is no login, so **anyone with the site URL can read tickets and
 create or update them**. Messages and activity are append-only. Add Supabase Auth and per-user policies before
 using this for real data. The signed-in agent is fixed to `a1` (Priya Nair) until then.
+
+`20261015000000_feedback.sql` adds `feedback`. It is **insert-only** for visitors: there is no select policy or
+grant, because entries can hold email addresses. Read submissions in the Supabase dashboard (Table Editor → `feedback`).
 
 ## Setup
 

@@ -46,6 +46,18 @@ describe('App', () => {
     delete Element.prototype.scrollIntoView;
   });
 
+  it('landing shows the feedback section and the Feedback nav link', () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    renderAt('/');
+    const section = screen.getByRole('region', { name: 'Tell us what you think' });
+    expect(within(section).getByRole('button', { name: 'Send feedback' })).toBeTruthy();
+    const nav = screen.getByRole('navigation', { name: 'Landing' });
+    fireEvent.click(within(nav).getByRole('link', { name: 'Feedback' }));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+    expect(document.activeElement.textContent).toBe('Tell us what you think');
+    delete Element.prototype.scrollIntoView;
+  });
+
   it('app sidebar lists every workspace tab', () => {
     renderAt('/app');
     const nav = screen.getByRole('navigation', { name: 'Main' });

@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import DiwaliBanner from '../components/DiwaliBanner.jsx';
+import FeedbackSection from '../components/FeedbackSection.jsx';
 import Icon from '../components/Icon.jsx';
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import { APP_NAME } from '../data/constants.js';
@@ -115,6 +116,13 @@ export default function Landing({ theme, onToggleTheme }) {
     pricingHeadingRef.current.focus({ preventScroll: true });
   }
 
+  // Same HashRouter limitation as above.
+  function showFeedback(e) {
+    e.preventDefault();
+    document.getElementById('feedback').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('feedback-title').focus({ preventScroll: true });
+  }
+
   return (
     <div className="landing">
       <header className="l-nav">
@@ -128,6 +136,7 @@ export default function Landing({ theme, onToggleTheme }) {
             <a href="#how">How it works</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
+            <a href="#feedback" onClick={showFeedback}>Feedback</a>
           </nav>
           <div className="l-nav-actions">
             <ThemeToggle theme={theme} onToggle={onToggleTheme} />
@@ -240,6 +249,8 @@ export default function Landing({ theme, onToggleTheme }) {
             </div>
           </div>
         </section>
+
+        <FeedbackSection />
 
         <section className="l-cta">
           <div className="l-wrap l-cta-inner">
