@@ -128,8 +128,9 @@ Every push to `main` runs the tests, builds and deploys to GitHub Pages.
 ## Branding
 
 The product name lives in `APP_NAME` in `frontend/src/data/constants.js`. The logo is `frontend/public/logo.svg`,
-used in the sidebar, the landing page and as the browser tab icon. The current file is a **placeholder**: overwrite
-it with the official SVG under the same name, keeping a `viewBox` and colours that read on light and dark backgrounds.
+used in the landing top bar and footer, the app sidebar, the app top bar (when the sidebar is hidden) and as the
+browser tab icon. It is a vector redraw of the company logo on an opaque white tile, so it reads in both the light
+and dark themes and in any browser tab strip.
 
 ## Diwali offer
 

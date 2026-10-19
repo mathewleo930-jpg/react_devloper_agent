@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
+import { APP_NAME } from './data/constants.js';
 import { createSeedState } from './data/mockData.js';
 
 vi.mock('./hooks/useTheme.js', () => ({
@@ -56,6 +57,21 @@ describe('App', () => {
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
     expect(document.activeElement.textContent).toBe('Tell us what you think');
     delete Element.prototype.scrollIntoView;
+  });
+
+  it('landing top bar shows the logo next to the app name', () => {
+    renderAt('/');
+    const brand = within(screen.getByRole('banner')).getByRole('link', { name: APP_NAME });
+    expect(brand.textContent).toBe(APP_NAME);
+    expect(brand.querySelector('img').getAttribute('src')).toMatch(/logo\.svg$/);
+  });
+
+  it('app top bar shows the logo linked to home', () => {
+    renderAt('/app');
+    const brand = within(screen.getByRole('banner')).getByRole('link', { name: APP_NAME });
+    expect(brand.getAttribute('href')).toBe('/');
+    expect(brand.querySelector('img').getAttribute('src')).toMatch(/logo\.svg$/);
+    expect(brand.textContent).toBe(APP_NAME);
   });
 
   it('app sidebar lists every workspace tab', () => {

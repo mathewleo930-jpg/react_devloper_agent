@@ -233,7 +233,7 @@ textarea.input { resize: vertical; line-height: 1.55; }
   font-weight: 700; font-size: 1.05rem; color: var(--text); text-decoration: none; letter-spacing: -0.02em;
 }
 .brand-sm { font-size: 0.95rem; }
-.brand-logo { display: block; border-radius: 7px; }
+.brand-logo { display: block; flex-shrink: 0; border-radius: 7px; }
 
 .side-nav { display: flex; flex-direction: column; gap: 2px; }
 .side-nav-title {
@@ -277,6 +277,7 @@ textarea.input { resize: vertical; line-height: 1.55; }
   border-bottom: 1px solid var(--border);
 }
 .menu-btn { display: none; }
+.appbar-brand { display: none; flex-shrink: 0; }
 .global-search {
   position: relative; display: flex; align-items: center; flex: 1; max-width: 460px;
 }
@@ -307,11 +308,11 @@ textarea.input { resize: vertical; line-height: 1.55; }
   .shell-menu-open .sidebar-scrim {
     display: block; position: fixed; inset: 0; z-index: 40; background: rgba(15, 18, 25, 0.45);
   }
-  .sidebar-close, .menu-btn { display: inline-flex; }
+  .sidebar-close, .menu-btn, .appbar-brand { display: inline-flex; }
   .appbar { padding: 0 1rem; }
 }
 @media (max-width: 560px) {
-  .source-pill { display: none; }
+  .source-pill, .appbar-brand-name { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
 
