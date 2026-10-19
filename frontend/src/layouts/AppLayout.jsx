@@ -102,6 +102,10 @@ export default function AppLayout({ theme, onToggleTheme }) {
           <button type="button" className="icon-btn menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu">
             <Icon name="menu" />
           </button>
+          <Link to="/" className="brand appbar-brand" aria-label={APP_NAME}>
+            <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width="28" height="28" />
+            <span className="appbar-brand-name">{APP_NAME}</span>
+          </Link>
           <form className="global-search" role="search" onSubmit={onSearch}>
             <Icon name="search" size={16} />
             <label htmlFor="global-search" className="visually-hidden">Search tickets</label>
